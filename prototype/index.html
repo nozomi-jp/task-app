@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>タスク管理アプリ（プロトタイプ）</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <p class="proto-note">これはプロトタイプです。操作はできますが保存はしません（再読み込みすると元に戻ります）</p>
+
+  <!-- ヘッダー -->
+  <header class="header">
+    <h1 class="board-title">マイボード</h1>
+    <span class="save-status">変更は自動保存</span>
+  </header>
+
+  <!-- ボード（SC-01） -->
+  <!-- 中身は script.js が作る -->
+  <main class="board" id="board"></main>
+
+  <!-- 状態の見本 -->
+  <section class="samples">
+    <h2 class="samples-title">状態の見本</h2>
+    <p class="samples-lead">操作したときだけ表示されるものの見本です（この見本は動きません）。保存エラー以外は、上のボードでも実際に操作して確かめられます。</p>
+
+    <div class="sample-grid">
+      <!-- SC-01-a -->
+      <div class="sample">
+        <h3 class="sample-name">リスト名の入力欄 <span class="sample-id">SC-01-a</span></h3>
+        <p class="sample-desc">「+ リストを追加」やリスト名を押したとき。20文字まで</p>
+        <div class="list">
+          <input class="input" type="text" value="保留" maxlength="20">
+          <p class="hint">Enterで確定 ／ Escでやめる</p>
+        </div>
+      </div>
+
+      <!-- SC-01-b -->
+      <div class="sample">
+        <h3 class="sample-name">カードの入力欄 <span class="sample-id">SC-01-b</span></h3>
+        <p class="sample-desc">上：カードを追加中（入力欄は開いたまま）／下：ダブルクリックで編集中</p>
+        <div class="list">
+          <div class="cards">
+            <div class="card">要件定義を書く</div>
+            <input class="input" type="text" placeholder="カードの内容を入力" maxlength="200">
+          </div>
+          <p class="hint">Enterで確定 ／ Escでやめる</p>
+        </div>
+        <div class="list sample-gap">
+          <div class="cards">
+            <input class="input" type="text" value="画面を作る（ボード部分）" maxlength="200">
+            <div class="card">環境を用意</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- F-08 -->
+      <div class="sample">
+        <h3 class="sample-name">ドラッグ中 <span class="sample-id">F-08・F-09</span></h3>
+        <p class="sample-desc">つかんだカードは半透明。置く位置に青い線が出る</p>
+        <div class="list">
+          <div class="list-header">
+            <h2 class="list-title">進行中</h2>
+          </div>
+          <div class="cards">
+            <div class="card">環境を用意</div>
+            <div class="drop-line"></div>
+            <div class="card">課題を確認</div>
+          </div>
+        </div>
+        <div class="card drag-ghost">画面を作る</div>
+      </div>
+
+      <!-- SC-01-c -->
+      <div class="sample">
+        <h3 class="sample-name">保存エラー <span class="sample-id">SC-01-c</span></h3>
+        <p class="sample-desc">保存に失敗したとき、ヘッダー右上の文字が変わる</p>
+        <div class="header header-sample">
+          <span class="board-title">マイボード</span>
+          <span class="save-status error">保存できませんでした（容量がいっぱいの可能性があります）</span>
+        </div>
+        <p class="sample-desc">フェーズ2では「保存できませんでした（サーバーに接続できません）」</p>
+      </div>
+
+      <!-- DL-01 -->
+      <div class="sample">
+        <h3 class="sample-name">リスト削除の確認 <span class="sample-id">DL-01</span></h3>
+        <p class="sample-desc">カードが入ったリストの「×」を押したとき（ブラウザ標準の確認画面）</p>
+        <div class="dialog">
+          <p class="dialog-from">このページの内容</p>
+          <p>『ToDo』を削除しますか？中のカード3枚も削除されます</p>
+          <div class="dialog-buttons">
+            <span class="dialog-btn primary">OK</span>
+            <span class="dialog-btn">キャンセル</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="script.js"></script>
+</body>
+</html>
