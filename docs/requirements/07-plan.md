@@ -33,7 +33,7 @@
 | Q-02 | データベースの種類 | — | **決定（v2.0）**：PostgreSQL（発注者の指定） |
 | Q-03 | サーバーのポート番号と起動コマンド | — | **決定（v2.0）**：8080番。`.\mvnw.cmd spring-boot:run`（12.2） |
 | Q-04 | 同梱するSortableJSのバージョン | — | **取りやめ（v2.0）**：SortableJS は使わず dnd-kit にした |
-| Q-05 | 使うソフトとライブラリの具体的な版（JDK 21 の細かい版、Spring Boot、Node.js、React、Vite、dnd-kit、PostgreSQL） | ステップ1の開始時 | 未定。その時点の最新の安定版（Node.js はLTS版）を使い、決めたら13章に書き足す |
+| Q-05 | 使うソフトとライブラリの具体的な版（JDK 21 の細かい版、Spring Boot、Node.js、React、Vite、dnd-kit、PostgreSQL） | ステップ1の開始時 | 一部決定（2026-11-19）：JDK 21.0.13（Eclipse Temurin）、Spring Boot 4.1.2、Maven 3.10.1（Maven Wrapper）。残り（Node.js・React・Vite・dnd-kit・PostgreSQL）は、入れるときにその時点の最新の安定版（Node.js はLTS版）を使い、13章に書き足す |
 
 ## 18. 開発ステップ
 
