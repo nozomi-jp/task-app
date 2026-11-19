@@ -29,11 +29,11 @@
 
 | No | 内容 | 決める時期 | 状態 |
 | --- | --- | --- | --- |
-| Q-01 | バックエンドの言語とフレームワーク | — | **決定（v2.0）**：Java 21 ＋ Spring Boot（発注者の指定） |
+| Q-01 | バックエンドの言語とフレームワーク | — | **決定（v2.0）**：Java ＋ Spring Boot（発注者の指定）。版は Java 25（13.4） |
 | Q-02 | データベースの種類 | — | **決定（v2.0）**：PostgreSQL（発注者の指定） |
 | Q-03 | サーバーのポート番号と起動コマンド | — | **決定（v2.0）**：8080番。`.\mvnw.cmd spring-boot:run`（12.2） |
 | Q-04 | 同梱するSortableJSのバージョン | — | **取りやめ（v2.0）**：SortableJS は使わず dnd-kit にした |
-| Q-05 | 使うソフトとライブラリの具体的な版（JDK 21 の細かい版、Spring Boot、Node.js、React、Vite、dnd-kit、PostgreSQL） | ステップ1の開始時 | 一部決定（2026-11-19）：JDK 21.0.13（Eclipse Temurin）、Spring Boot 4.1.2、Maven 3.10.1（Maven Wrapper）。残り（Node.js・React・Vite・dnd-kit・PostgreSQL）は、入れるときにその時点の最新の安定版（Node.js はLTS版）を使い、13章に書き足す |
+| Q-05 | 使うソフトとライブラリの具体的な版（JDK、Spring Boot、Node.js、React、Vite、dnd-kit、PostgreSQL） | ステップ1の開始時 | 一部決定（2026-11-19）：JDK 25（Eclipse Temurin）、Spring Boot 4.1.2、Maven 3.10.1（Maven Wrapper）。最初は JDK 21 にしたが、「安定版の最新を使う」方針に合わせて 25 に変えた。残り（Node.js・React・Vite・dnd-kit・PostgreSQL）は、入れるときに13.4の方針で決め、13.4に書き足す |
 
 ## 18. 開発ステップ
 

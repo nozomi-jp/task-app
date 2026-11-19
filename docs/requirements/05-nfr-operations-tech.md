@@ -63,7 +63,7 @@
 
 | 順番 | やること | 内容 |
 | --- | --- | --- |
-| 1 | ソフトを入れる | JDK 21（Eclipse Temurin）、Node.js（LTS版）、PostgreSQL（Windows版インストーラー。pgAdmin も一緒に入る）。版はQ-05で決める |
+| 1 | ソフトを入れる | JDK 25（Eclipse Temurin）、Node.js（LTS版）、PostgreSQL（Windows版インストーラー。pgAdmin も一緒に入る）。版はQ-05で決める |
 | 2 | データベースを作る | pgAdmin か `psql` で、アプリ専用のユーザー `taskboard` とデータベース `taskboard` を作る |
 | 3 | パスワードを設定する | `taskboard` ユーザーのパスワードを、Windows の環境変数 `TASKBOARD_DB_PASSWORD` に入れる。設定ファイル（`application.properties`）には `${TASKBOARD_DB_PASSWORD}` とだけ書き、パスワードそのものは書かない（NFR-26） |
 | 4 | 画面をビルドする | `frontend` フォルダで `npm install`、`npm run build`。できたファイルは `backend/src/main/resources/static/` に入る（Gitには入れない） |
@@ -145,7 +145,7 @@ v2.0で、発注者から次の指定がありました。
 | 領域 | 候補 | 採用 | 理由 |
 | --- | --- | --- | --- |
 | 言語・フレームワーク | Java ＋ Spring Boot | **Java ＋ Spring Boot**（指定） | 発注者の指定 |
-| Javaの版 | 17 ／ 21 ／ 25（いずれも長期サポート版） | 21 | ①今の Spring Boot で動き、学習資料がいちばん多い。JDK は無料の Eclipse Temurin を使う |
+| Javaの版 | 17 ／ 21 ／ 25（いずれも長期サポート版） | 25 | 発注者の方針「安定版の最新を使う」に合わせ、最新の長期サポート版にする。出てから1年以上たっていて安定しており、Spring Boot 4.1.2 で使える。JDK は無料の Eclipse Temurin を使う（比べた版は13.4） |
 | ビルドツール | Maven ／ Gradle | Maven | ①Spring Boot の資料・現場で多い。設定（`pom.xml`）の書き方が決まっていて読みやすい。Maven Wrapper（`mvnw`）を使うので、Maven自体を入れなくてよい |
 | データベースの読み書き | Spring Data JPA ／ MyBatis ／ JdbcClient（SQLを直接書く） | Spring Data JPA | ①Spring Boot 標準で資料が多い。③簡単な読み書きはSQLを書かずに済む。並べ替えなど複雑な処理だけ、必要に応じてクエリを書く |
 | テーブルの作成・変更 | Flyway ／ Liquibase ／ 手でSQLを実行 | Flyway | ①Spring Boot が標準で対応。SQLファイルをそのまま書けるので、テーブル定義（9.2）と見比べやすい。「最初の1回だけ初期データを入れる」（9.3）が自然にできる |
@@ -168,12 +168,26 @@ v2.0で、発注者から次の指定がありました。
 
 ### 13.4 使う版（Q-05）
 
+方針：**安定版の最新**を使う。長期サポート版（LTS）がある Java・Node.js は、LTS の中から最新を選ぶ（発注者の方針）。
+
+**比べた版**（2026-11-19 時点）
+
+| ソフト | 版の候補 | 選んだ版 | 理由 |
+| --- | --- | --- | --- |
+| Java | LTS：8（2014年）／ 11（2018年）／ 17（2021年）／ 21（2023年）／ **25（2025年）**。LTSでない 26・27 は候補から外す | 25 | 最新のLTS。17 は Spring Boot 4 で使える最も古い版、21 は1つ前のLTS |
+| Spring Boot | 4.0.9 ／ **4.1.2**（4.2.0 は試験版の RC2） | 4.1.2 | 最新の安定版。試験版（RC・SNAPSHOT）は使わない |
+| Node.js | LTS：20（Iron）／ 22（Jod）／ 24（Krypton）／ **26（Lithium）** | 26 | 最新のLTS（画面を作り始めるときに確定する） |
+| React | 最新の安定版 19.3.1 | 19.3.1 | React には LTS の仕組みがないので、最新の安定版を使う（画面を作り始めるときに確定する） |
+| Vite | 最新の安定版 8.3.8 | 8.3.8 | 同上 |
+
+**決まった版**
+
 | ソフト・ライブラリ | 版 | 決めた日 |
 | --- | --- | --- |
-| JDK（Eclipse Temurin） | 21.0.13 | 2026-11-19 |
+| JDK（Eclipse Temurin） | 25.0.5 | 2026-11-19 |
 | Spring Boot | 4.1.2 | 2026-11-19 |
 | Maven（Maven Wrapper で自動で入る） | 3.10.1 | 2026-11-19 |
-| Node.js・React・Vite・dnd-kit・PostgreSQL | 未定（入れるときに決める） | |
+| Node.js・React・Vite・dnd-kit・PostgreSQL | 未定（入れるときに上の方針で決める） | |
 
 ### 13.5 ファイル構成
 
