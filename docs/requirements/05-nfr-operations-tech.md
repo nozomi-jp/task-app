@@ -29,7 +29,7 @@
 | NFR-18 | 起動方法 | PostgreSQL が動いていれば、コマンド1つでサーバーを起動でき、`http://localhost:8080` で開ける（12.2） |
 | NFR-19 | データ保全 | データベースの制約（必須・文字数・CHECK・外部キー）で、ルールに合わないデータが入らないようにする（9.2） |
 | NFR-20 | データ保全 | カードの移動・並べ替えによる並び順の更新は、1つのトランザクションで行う（9.4） |
-| NFR-21 | セキュリティ | サーバーとデータベースは、自分のパソコンからの接続だけを受け付ける。同じWi-Fiにつながったほかの機器からは開けない（Spring Boot は `server.address=127.0.0.1`、PostgreSQL は `listen_addresses = 'localhost'`） |
+| NFR-21 | セキュリティ | サーバーとデータベースは、自分のパソコンからの接続だけを受け付ける。同じWi-Fiにつながったほかの機器からは開けない（Spring Boot は `server.address=127.0.0.1`、PostgreSQL は `compose.yaml` で `127.0.0.1:5432` にだけ公開する） |
 | NFR-22 | セキュリティ | 入力のチェック（文字数・空欄・日付・優先度の値）は、画面とバックエンドの両方で行う。画面のチェックは、APIを直接呼ばれると素通りされるため。バックエンドは Bean Validation（`@NotBlank`・`@Size` など）で行う |
 | NFR-23 | セキュリティ | SQLは、入力された文字を直接つなげて組み立てず、プレースホルダ（値を入れる穴）を使う（SQLインジェクション対策）。Spring Data JPA を使い、自分でSQLを書くときもパラメータで値を渡す |
 | NFR-24 | 運用 | 手順に沿って、データベースのバックアップと復元ができる（12.4） |
@@ -53,7 +53,7 @@
 | 場合 | 結果 |
 | --- | --- |
 | 複数のタブで同時に操作した | 後から保存した内容が残り、先に保存した内容は失われることがある |
-| データベースを消した・壊れた、PostgreSQL を入れ直した | 消える。バックアップから戻す（12.4） |
+| データベースが壊れた、Docker のデータ置き場（ボリューム `taskboard-pgdata`）を消した、Docker Desktop を入れ直した | 消える。バックアップから戻す（12.4）。コンテナを消すだけ（`docker compose down`）なら消えない |
 
 ブラウザのデータを消しても、別のブラウザで開いても、データベースにあるデータは消えません。
 
@@ -63,9 +63,9 @@
 
 | 順番 | やること | 内容 |
 | --- | --- | --- |
-| 1 | ソフトを入れる | JDK 25（Eclipse Temurin）、Node.js（LTS版）、PostgreSQL（Windows版インストーラー。pgAdmin も一緒に入る）。版はQ-05で決める |
-| 2 | データベースを作る | pgAdmin か `psql` で、アプリ専用のユーザー `taskboard` とデータベース `taskboard` を作る |
-| 3 | パスワードを設定する | `taskboard` ユーザーのパスワードを、Windows の環境変数 `TASKBOARD_DB_PASSWORD` に入れる。設定ファイル（`application.properties`）には `${TASKBOARD_DB_PASSWORD}` とだけ書き、パスワードそのものは書かない（NFR-26） |
+| 1 | ソフトを入れる | JDK 25（Eclipse Temurin）、Node.js（LTS版）、Docker Desktop。版はQ-05で決める。データベースの中身を見るときは pgAdmin も使う（13.3） |
+| 2 | パスワードを決める | データベースの `taskboard` ユーザーのパスワードを自分で決め、Windows のユーザー環境変数 `TASKBOARD_DB_PASSWORD` に入れる。`compose.yaml` と `application.properties` には `${TASKBOARD_DB_PASSWORD}` とだけ書き、パスワードそのものは書かない（NFR-26）。設定したら VS Code を開き直す |
+| 3 | データベースを作る | リポジトリのフォルダで `docker compose up -d`。初回は PostgreSQL のイメージをダウンロードし、ユーザー `taskboard` とデータベース `taskboard` を自動で作る |
 | 4 | 画面をビルドする | `frontend` フォルダで `npm install`、`npm run build`。できたファイルは `backend/src/main/resources/static/` に入る（Gitには入れない） |
 
 テーブルは、サーバーを最初に起動したときに Flyway が自動で作ります（9.3）。
@@ -76,7 +76,9 @@
 2. `.\mvnw.cmd spring-boot:run` を入力する
 3. 「Started TaskboardApplication」の表示を確認し、ブラウザで `http://localhost:8080` を開く
 
-PostgreSQL は Windows のサービスとして自動で動いているので、ふだんは起動の操作はいりません。
+データベースは、Docker Desktop が起動すると一緒に動き出す設定（`restart: unless-stopped`）なので、ふだんは起動の操作はいりません。動いていないときは、リポジトリのフォルダで `docker compose up -d` を入力します。
+
+Docker Desktop は、Windows にサインインすると自動で起動するように設定しておきます（Docker Desktop の Settings → General → 「Start Docker Desktop when you sign in to your computer」）。
 
 画面のプログラムを変えたときは、起動の前に 12.1 の4（ビルド）をやり直します。
 
@@ -84,17 +86,17 @@ PostgreSQL は Windows のサービスとして自動で動いているので、
 
 - ターミナルで Ctrl+C を押す
 - 保存は操作のたびに終わっているので、止める前に何かをする必要はない
-- PostgreSQL は止めなくてよい
+- データベース（Docker）は止めなくてよい。止めたいときは、リポジトリのフォルダで `docker compose stop`
 
 ### 12.4 バックアップと復元
 
 | 項目 | 内容 |
 | --- | --- |
 | いつ | 月に1回、およびテーブルの形を変える作業（新しいマイグレーションの追加）の前 |
-| どうやって | `pg_dump -U taskboard -d taskboard -F c -f 保存先\taskboard-年月日.dump`（PostgreSQL 付属のコマンド。データベース全体を1つのファイルに書き出す） |
+| どうやって | リポジトリのフォルダで `docker compose exec -T db pg_dump -U taskboard -d taskboard -F c > 保存先\taskboard-年月日.dump`（コンテナの中の PostgreSQL 付属のコマンドで、データベース全体を1つのファイルに書き出す）。PowerShell ではなくコマンドプロンプトか Git Bash で実行する（PowerShell の `>` はファイルの中身を変えてしまうため） |
 | 保存先 | アプリのフォルダとは別のフォルダ（例：`ドキュメント\taskboard-backup`）。Gitには入れない |
 | 何世代残すか | 直近3回分。それより古いものは削除する |
-| 復元 | サーバーを止め、`pg_restore -U taskboard -d taskboard --clean バックアップのファイル` で戻し、サーバーを起動する |
+| 復元 | サーバーを止め、`docker compose exec -T db pg_restore -U taskboard -d taskboard --clean < バックアップのファイル` で戻し、サーバーを起動する（バックアップと同じく、コマンドプロンプトか Git Bash で実行する） |
 
 ### 12.5 障害時の対応
 
@@ -103,8 +105,9 @@ PostgreSQL は Windows のサービスとして自動で動いているので、
 | ブラウザに「このサイトにアクセスできません」 | サーバーを起動したか | 起動する（12.2） |
 | 画面に赤い文字「保存できませんでした」 | ターミナルにエラーが出ていないか | エラー内容を読む。サーバーが止まっていれば起動し直す |
 | 起動時に「Port 8080 was already in use」 | 8080番をほかのアプリが使っていないか（サーバーを2つ起動していないか） | そのアプリを止める |
-| 起動時に「Connection refused」など、データベースにつながらないエラー | PostgreSQL のサービスが動いているか（Windows の「サービス」画面で `postgresql-x64-（版）`） | サービスを開始する |
-| 起動時に「password authentication failed」 | 環境変数 `TASKBOARD_DB_PASSWORD` が正しいか | 設定し直し、ターミナルを開き直す |
+| 起動時に「Connection refused」など、データベースにつながらないエラー | Docker Desktop が起動しているか。`docker compose ps` で `db` が `healthy` か | Docker Desktop を起動する。`db` がなければ `docker compose up -d` |
+| `docker compose up -d` で「port is already allocated」 | 5432番をほかのアプリが使っていないか（Windows 版 PostgreSQL のサービス `postgresql-x64-18` が動いていないか） | そのアプリ・サービスを止める |
+| 起動時に「password authentication failed」 | 環境変数 `TASKBOARD_DB_PASSWORD` が正しいか | 設定し直し、VS Code を開き直す。データベースを最初に作ったあとにパスワードを変えた場合は、データベース側のパスワードは変わらないので注意 |
 | 画面が真っ白、または古い画面のまま | 画面をビルドしたか | 12.1 の4をやり直す |
 | データがおかしい・消えた | pgAdmin で `lists`・`cards` テーブルの中身を見る | バックアップから戻す（12.4） |
 
@@ -159,8 +162,8 @@ v2.0で、発注者から次の指定がありました。
 | 領域 | 候補 | 採用 | 理由 |
 | --- | --- | --- | --- |
 | データベース | PostgreSQL | **PostgreSQL**（指定） | 発注者の指定 |
-| PostgreSQL の入れ方 | Windows版インストーラー ／ Docker | Windows版インストーラー | ②Docker を覚えなくてよい。Windows のサービスとして自動で動き、中身を見るツール（pgAdmin）も一緒に入る |
-| データベースの中身を見るツール | pgAdmin ／ psql ／ VS Code の拡張機能 | pgAdmin | ②PostgreSQL と一緒に入る。表の中身を画面で見られる（AT-35など） |
+| PostgreSQL の動かし方 | Windows版インストーラー ／ Docker（Docker Compose） | Docker | 発注者の指示（v2.1で変更）。①講座・現場で一般的。②設定が `compose.yaml` 1つにまとまり、Gitで管理できる。作り直しもコマンド1つでできる。v2.0では Windows 版を選んで入れたが、サービスは止めて自動で動かない設定にした（pgAdmin を使うため、アンインストールはしない） |
+| データベースの中身を見るツール | pgAdmin ／ psql ／ VS Code の拡張機能 | pgAdmin | ②Windows 版 PostgreSQL と一緒にすでに入っている。`localhost:5432` の `taskboard` に接続すると、Docker のデータベースの中身を画面で見られる（AT-35など） |
 | テスト | 手動（受入テスト表） ／ 自動テスト | 手動 | 機能が少なく、画面操作が中心のため。自動テスト（JUnit・Vitest）は今後の学習課題（19章） |
 | バージョン管理 | Git ／ なし | Git | 変更の記録と、壊したときに戻すため |
 | エディタ | VS Code | VS Code | 学習中のエディタ。Java の拡張機能（Extension Pack for Java・Spring Boot Extension Pack）を入れる |
@@ -187,12 +190,15 @@ v2.0で、発注者から次の指定がありました。
 | JDK（Eclipse Temurin） | 25.0.5 | 2026-11-19 |
 | Spring Boot | 4.1.2 | 2026-11-19 |
 | Maven（Maven Wrapper で自動で入る） | 3.10.1 | 2026-11-19 |
-| Node.js・React・Vite・dnd-kit・PostgreSQL | 未定（入れるときに上の方針で決める） | |
+| PostgreSQL（Docker イメージ `postgres:18.7`） | 18.7（今サポートされている 15〜18 のうち最新） | 2026-11-20 |
+| Docker Desktop | 29.9.3（Docker Compose v5.7.0） | 2026-11-20 |
+| Node.js・React・Vite・dnd-kit | 未定（入れるときに上の方針で決める） | |
 
 ### 13.5 ファイル構成
 
 ```
 （リポジトリ）
+├── compose.yaml                 データベース（PostgreSQL）を Docker で動かす設定
 ├── docs/requirements/           要件定義書
 ├── prototype/                   画面プロトタイプ（見た目の参考。アプリ本体では使わない）
 ├── frontend/                    画面（React）

@@ -1,0 +1,29 @@
+# タスク管理アプリのデータベース（PostgreSQL）を Docker で動かす設定
+#   起動： docker compose up -d
+#   停止： docker compose stop
+# パスワードは Windows の環境変数 TASKBOARD_DB_PASSWORD から読む（ファイルには書かない。NFR-26）
+
+services:
+  db:
+    image: postgres:18.7
+    environment:
+      POSTGRES_DB: taskboard
+      POSTGRES_USER: taskboard
+      POSTGRES_PASSWORD: ${TASKBOARD_DB_PASSWORD:?環境変数 TASKBOARD_DB_PASSWORD を設定してください}
+    ports:
+      # 自分のパソコンからの接続だけを受け付ける（NFR-21）
+      - "127.0.0.1:5432:5432"
+    volumes:
+      # データの保存場所。コンテナを消してもデータは残る
+      # （PostgreSQL 18 以降の公式イメージは /var/lib/postgresql に置く決まり）
+      - taskboard-pgdata:/var/lib/postgresql
+    # Docker Desktop が起動すると、一緒に動き出す
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taskboard -d taskboard"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  taskboard-pgdata:
