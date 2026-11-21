@@ -192,7 +192,11 @@ v2.0で、発注者から次の指定がありました。
 | Maven（Maven Wrapper で自動で入る） | 3.10.1 | 2026-11-19 |
 | PostgreSQL（Docker イメージ `postgres:18.7`） | 18.7（今サポートされている 15〜18 のうち最新） | 2026-11-20 |
 | Docker Desktop | 29.9.3（Docker Compose v5.7.0） | 2026-11-20 |
-| Node.js・React・Vite・dnd-kit | 未定（入れるときに上の方針で決める） | |
+| Node.js（LTS） | 26.13.1（npm 11.20.0） | 2026-11-21 |
+| React | 19.3.1 | 2026-11-21 |
+| Vite | 8.3.8（ひな型は create-vite 9.3.4、JavaScript 版） | 2026-11-21 |
+| oxlint（書き方のチェック） | 1.94.0（Vite のひな型が ESLint の代わりに入れるもの） | 2026-11-21 |
+| dnd-kit | 未定（ドラッグ&ドロップを作るときに上の方針で決める） | |
 
 ### 13.5 ファイル構成
 
@@ -205,7 +209,7 @@ v2.0で、発注者から次の指定がありました。
 │   ├── package.json             使うライブラリの一覧
 │   ├── package-lock.json        ライブラリの版の固定（NFR-28）
 │   ├── vite.config.js           開発中に /api をバックエンドへ中継する設定、ビルド先の設定
-│   ├── eslint.config.js         書き方のチェックの設定
+│   ├── .oxlintrc.json           書き方のチェック（oxlint）の設定
 │   ├── index.html
 │   └── src/
 │       ├── main.jsx             入口
