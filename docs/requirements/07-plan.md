@@ -33,7 +33,7 @@
 | Q-02 | データベースの種類 | — | **決定（v2.0）**：PostgreSQL（発注者の指定） |
 | Q-03 | サーバーのポート番号と起動コマンド | — | **決定（v2.0）**：8080番。`.\mvnw.cmd spring-boot:run`（12.2） |
 | Q-04 | 同梱するSortableJSのバージョン | — | **取りやめ（v2.0）**：SortableJS は使わず dnd-kit にした |
-| Q-05 | 使うソフトとライブラリの具体的な版（JDK、Spring Boot、Node.js、React、Vite、dnd-kit、PostgreSQL） | ステップ1の開始時 | 一部決定（2026-11-19）：JDK 25（Eclipse Temurin）、Spring Boot 4.1.2、Maven 3.10.1（Maven Wrapper）。最初は JDK 21 にしたが、「安定版の最新を使う」方針に合わせて 25 に変えた。2026-11-20 に PostgreSQL 18.7（Docker イメージ）と Docker Desktop 29.9.3 を決定。2026-11-21 に Node.js 26.13.1・React 19.3.1・Vite 8.3.8 を決定。残り（dnd-kit）は、入れるときに13.4の方針で決め、13.4に書き足す |
+| Q-05 | 使うソフトとライブラリの具体的な版（JDK、Spring Boot、Node.js、React、Vite、dnd-kit、PostgreSQL） | ステップ1の開始時 | 一部決定（2026-11-19）：JDK 25（Eclipse Temurin）、Spring Boot 4.1.2、Maven 3.10.1（Maven Wrapper）。最初は JDK 21 にしたが、「安定版の最新を使う」方針に合わせて 25 に変えた。2026-11-20 に PostgreSQL 18.7（Docker イメージ）と Docker Desktop 29.9.3 を決定。2026-11-21 に Node.js 26.13.1・React 19.3.1・Vite 8.3.8 を決定し、v2.6 で TypeScript 7.0.2 も決定（画面のライブラリの版はすべて 13.4）。残り（dnd-kit）は、入れるときに13.4の方針で決め、13.4に書き足す |
 
 ## 18. 開発ステップ
 
