@@ -16,6 +16,9 @@ public interface CardRepository extends JpaRepository<Card, Long> {
     /** すべてのカードを、リストごと・並び順（上から）に取り出す */
     List<Card> findAllByOrderByListIdAscPositionAsc();
 
+    /** あるリストのカードを、並び順（上から）に取り出す */
+    List<Card> findByListIdOrderByPositionAsc(Long listId);
+
     /**
      * あるリストの中で、いちばん下のカードの並び順を調べる。カードが1枚もなければ -1。
      * 新しいカードは、この次（+1）の位置に置く。

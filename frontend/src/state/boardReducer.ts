@@ -7,6 +7,8 @@ export type BoardAction =
   | { type: 'loaded'; board: Board }
   /** カードを追加した（API が返したカードを、そのリストの一番下に足す） */
   | { type: 'cardAdded'; listId: number; card: Card }
+  /** カードの内容を更新した（API が返したカードで、同じ id のカードを置き換える。場所は変えない） */
+  | { type: 'cardUpdated'; card: Card }
 
 /** 読み込む前は null */
 export type BoardState = Board | null
@@ -21,6 +23,14 @@ export function boardReducer(state: BoardState, action: BoardAction): BoardState
         lists: state.lists.map((list) =>
           list.id === action.listId ? { ...list, cards: [...list.cards, action.card] } : list,
         ),
+      }
+    case 'cardUpdated':
+      if (state === null) return state
+      return {
+        lists: state.lists.map((list) => ({
+          ...list,
+          cards: list.cards.map((card) => (card.id === action.card.id ? action.card : card)),
+        })),
       }
   }
 }

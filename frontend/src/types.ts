@@ -30,6 +30,12 @@ export type NewCard = {
   dueDate: string | null
 }
 
+/** カードの内容を更新するときに送るもの（API-06 PATCH）。説明・優先度・期限は null で「なし」にする */
+export type CardUpdate = NewCard
+
+/** 登録・詳細のダイアログで入力する値。listId はステータス（どのリストに入れるか） */
+export type CardFormValues = NewCard & { listId: number }
+
 /** ボード全体（API-01 GET /api/board の返事）。リストは左から並び順どおり */
 export type Board = {
   lists: TaskList[]
