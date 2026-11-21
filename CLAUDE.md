@@ -62,7 +62,7 @@ GitHub: https://github.com/nozomi-jp/task-app （操作は `gh` コマンドで�
 - プロセスを止めてよいのは、このスクリプトで 8080・5173 を空けるときだけ（発注者が 2026-11-21 に許可）。ほかのプロセスの停止（`Stop-Process`・`taskkill` など）は、これまでどおり禁止。
 - 強制のしくみ：
   - フック `.claude/hooks/guard-ports.sh`：別のポートを指定する起動（`--port`、`server.port` の上書き、`SERVER_PORT`）、`strictPort` を外すこと、設定ファイルのポートの書き換えを止める。
-  - `frontend/vite.config.js` は `port: 5173`・`strictPort: true`。5173 がふさがっていると、別のポートへ逃げずにエラーで止まる。バックエンドも 8080 がふさがっていればエラーで止まる。
+  - `frontend/vite.config.ts` は `port: 5173`・`strictPort: true`。5173 がふさがっていると、別のポートへ逃げずにエラーで止まる。バックエンドも 8080 がふさがっていればエラーで止まる。
   - 起動がポートのエラーで失敗したら、別のポートを試さず、スクリプトで空けてから同じポートで起動し直す。
 
 ## その他

@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
-import { fetchBoard } from './api/boardApi.js'
-import Board from './components/Board.jsx'
+import { fetchBoard } from './api/boardApi.ts'
+import Board from './components/Board.tsx'
+import type { Board as BoardData } from './types.ts'
 import './App.css'
 
 /** ボード画面全体（SC-01）。開いたときに API-01 でボードを読み込んで表示する */
 export default function App() {
-  const [board, setBoard] = useState(null) // 読み込んだボード。読み込み前は null
-  const [errorMessage, setErrorMessage] = useState(null) // 読み込みに失敗したときのメッセージ
+  const [board, setBoard] = useState<BoardData | null>(null) // 読み込んだボード。読み込み前は null
+  const [errorMessage, setErrorMessage] = useState<string | null>(null) // 読み込みに失敗したときのメッセージ
 
   // 画面を開いたときに1回だけ読み込む
   useEffect(() => {
@@ -15,8 +16,10 @@ export default function App() {
       .then((data) => {
         if (!ignore) setBoard(data)
       })
-      .catch((error) => {
-        if (!ignore) setErrorMessage(`読み込めませんでした（${error.message}）`)
+      .catch((error: unknown) => {
+        if (ignore) return
+        const reason = error instanceof Error ? error.message : String(error)
+        setErrorMessage(`読み込めませんでした（${reason}）`)
       })
     return () => {
       ignore = true
