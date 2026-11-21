@@ -8,6 +8,8 @@
 2. このフォルダで、初めてのときだけ `npm install`
 3. `npm run dev` → ブラウザで http://localhost:5173 を開く
 
+**PowerShell では `npm` ではなく `npm.cmd` と打つ**（例：`npm.cmd run dev`）。Windows の PowerShell は最初の設定だとスクリプト（`npm.ps1`）の実行を止めるため。コマンドプロンプトや Git Bash なら `npm` のままでよい。
+
 `/api` で始まる依頼は、開発サーバーがバックエンド（http://127.0.0.1:8080）へ中継する（`vite.config.js`）。
 
 ## コマンド
