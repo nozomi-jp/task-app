@@ -1,0 +1,32 @@
+/* 画面全体の土台（色・文字）。見た目は prototype/style.css に合わせている */
+
+/* ===== 色・大きさ（ここを変えると全体が変わる） ===== */
+:root {
+  --bg: #e8f0f8;          /* 画面の背景 */
+  --header-bg: #ffffff;
+  --list-bg: #f1f2f4;     /* リストの背景 */
+  --card-bg: #ffffff;
+  --text: #172b4d;
+  --text-sub: #5e6c84;
+  --accent: #0c66e4;      /* フォーカス */
+  --error: #c9372c;       /* エラーの文字 */
+  --border: #dcdfe4;
+  --list-width: 270px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  /* パソコンに入っている文字を使う（ネットから文字を読み込まない。NFR-06） */
+  font-family: "Hiragino Sans", "Yu Gothic UI", "Meiryo", sans-serif;
+  font-size: 14px;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
