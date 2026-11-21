@@ -137,7 +137,7 @@ v2.0で、発注者から次の指定がありました。
 | 領域 | 候補 | 採用 | 理由 |
 | --- | --- | --- | --- |
 | 画面作り | React | **React**（指定） | 発注者の指定。Next.js は使わない |
-| 言語 | JavaScript ／ TypeScript | JavaScript | ③覚えることを減らし、ReactとSpring Bootの学習に集中する。Reactの入門資料も多い。TypeScript は型で書き間違いを早く見つけられるが、型の書き方を覚える必要がある。書き間違いは、Vite の雛形に入っている ESLint（書き方のチェック）で減らす |
+| 言語 | JavaScript ／ TypeScript | TypeScript | v2.6 で JavaScript から変更（発注者の判断）。講座の先生のプロジェクトが TypeScript なので、先生の画面や説明と見比べやすくするため。型を書いておくと、名前の書き間違いなどを動かす前に見つけられる。画面のファイルが少ないうちに切り替えた。最初（v2.0〜v2.5）は「覚えることを減らす」ために JavaScript を選んでいた |
 | ビルドツール | Vite ／ Create React App ／ webpack を自分で設定 | Vite | ①Next.js を使わずにReactで作るときの定番。Create React App は開発が終わっている。③webpack は設定が多い |
 | ドラッグ&ドロップ | dnd-kit ／ @hello-pangea/dnd ／ SortableJS（react-sortablejs） | dnd-kit | ①React向けで広く使われ、リストをまたぐ移動と並べ替え（F-08・F-09）の例が多い。ライセンスはMIT。SortableJS は画面を直接書き換えるため、Reactと組み合わせると食い違いが起きやすい |
 | データの持ち方 | React標準（useState・useReducer） ／ Redux ／ Zustand | React標準 | ③画面が1つで、データもボード1枚だけなので、追加のライブラリはいらない。useReducer で「データを変える処理」をまとめる（NFR-12） |
@@ -196,7 +196,9 @@ v2.0で、発注者から次の指定がありました。
 | Docker Desktop | 29.9.3（Docker Compose v5.7.0） | 2026-11-20 |
 | Node.js（LTS） | 26.13.1（npm 11.20.0） | 2026-11-21 |
 | React | 19.3.1 | 2026-11-21 |
-| Vite | 8.3.8（ひな型は create-vite 9.3.4、JavaScript 版） | 2026-11-21 |
+| Vite | 8.3.8（ひな型は create-vite 9.3.4。v2.6 で TypeScript 版（react-ts）の形に合わせた） | 2026-11-21 |
+| TypeScript | 7.0.2 | 2026-11-21 |
+| @types/node（Node.js の型の説明書） | 26.6.6（Node.js 26 に合わせた。ひな型の指定は 24 系） | 2026-11-21 |
 | oxlint（書き方のチェック） | 1.94.0（Vite のひな型が ESLint の代わりに入れるもの） | 2026-11-21 |
 | dnd-kit | 未定（ドラッグ&ドロップを作るときに上の方針で決める） | |
 
@@ -210,12 +212,14 @@ v2.0で、発注者から次の指定がありました。
 ├── frontend/                    画面（React）
 │   ├── package.json             使うライブラリの一覧
 │   ├── package-lock.json        ライブラリの版の固定（NFR-28）
-│   ├── vite.config.js           開発中に /api をバックエンドへ中継する設定、ビルド先の設定
+│   ├── vite.config.ts           開発中に /api をバックエンドへ中継する設定、ポート（5173）、ビルド先の設定
+│   ├── tsconfig*.json           TypeScript の型チェックの設定（3つ。Vite のひな型のまま）
 │   ├── .oxlintrc.json           書き方のチェック（oxlint）の設定
 │   ├── index.html
 │   └── src/
-│       ├── main.jsx             入口
-│       ├── App.jsx              ボード画面全体
+│       ├── main.tsx             入口
+│       ├── types.ts             APIでやりとりするデータの形（型）
+│       ├── App.tsx              ボード画面全体
 │       ├── components/          画面の部品（Board・ListColumn・Card・入力欄・メニューなど）
 │       ├── state/               データを変える処理（useReducer）
 │       └── api/                 APIを呼ぶ処理

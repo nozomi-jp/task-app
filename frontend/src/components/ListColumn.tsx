@@ -1,7 +1,8 @@
-import Card from './Card.jsx'
+import type { TaskList } from '../types.ts'
+import Card from './Card.tsx'
 
 /** リスト1つ。リスト名と、その中のカードを上から並び順どおりに出す */
-export default function ListColumn({ list }) {
+export default function ListColumn({ list }: { list: TaskList }) {
   return (
     <section className="list">
       <div className="list-header">

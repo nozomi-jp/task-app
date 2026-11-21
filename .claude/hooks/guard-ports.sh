@@ -5,7 +5,7 @@
 # 止めるもの：
 #   - コマンドで別のポートを指定する（--port 5174、--server.port=8081、-Dserver.port=9090、SERVER_PORT=8081 など）
 #   - コマンドや設定で strictPort を false にする（ふさがっていると別のポートへ逃げてしまう）
-#   - application.properties / vite.config.js のポートを 8080・5173 以外に書き換える
+#   - application.properties / vite.config.ts のポートを 8080・5173 以外に書き換える
 # 違反したら exit 2 で止め、理由を Claude に返す。
 
 input="$(cat)"
@@ -48,7 +48,7 @@ case "$tool" in
           block "設定ファイルのポートを 8080・5173 以外にしようとしています（$(echo $nums)）。"
         fi
         if printf '%s' "$input" | grep -qiE 'strictPort *: *false'; then
-          block "vite.config.js の strictPort は true のままにします。"
+          block "vite.config.ts の strictPort は true のままにします。"
         fi
         ;;
     esac
