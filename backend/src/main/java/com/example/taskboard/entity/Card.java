@@ -1,6 +1,7 @@
 package com.example.taskboard.entity;
 
 import java.time.LocalDate;
+import java.time.OffsetDateTime;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -20,7 +21,7 @@ public class Card {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** どのリストに入っているか（lists.id） */
+    /** どのリストに入っているか（lists.id）。リスト＝ステータス（ToDo・進行中・完了など） */
     @Column(name = "list_id", nullable = false)
     private Long listId;
 
@@ -43,6 +44,13 @@ public class Card {
     @Column(nullable = false)
     private Integer position;
 
+    /**
+     * 最後に変更した日時。作るときはデータベースの初期値（now()）が入るので、ここからは入れない（insertable = false）。
+     * 内容を変えたり移動したりしたときに、今の日時にする。
+     */
+    @Column(name = "updated_at", insertable = false)
+    private OffsetDateTime updatedAt;
+
     protected Card() {
         // JPA が使う
     }
@@ -57,6 +65,29 @@ public class Card {
         this.description = description;
         this.dueDate = dueDate;
         this.priority = priority;
+        this.position = position;
+    }
+
+    /** 内容（タイトル・説明・期限・優先度）を書き換える（F-06・F-11・F-12）。null の項目は「なし」にする */
+    public void updateContent(String text, String description, LocalDate dueDate, String priority) {
+        this.text = text;
+        this.description = description;
+        this.dueDate = dueDate;
+        this.priority = priority;
+        this.updatedAt = OffsetDateTime.now();
+    }
+
+    /** 入っているリストと、リストの中の並び順を変える（移動・並べ替え） */
+    public void moveTo(Long listId, int position) {
+        if (!listId.equals(this.listId)) {
+            this.updatedAt = OffsetDateTime.now();
+        }
+        this.listId = listId;
+        this.position = position;
+    }
+
+    /** 並び順だけを振り直す（ほかのカードが移動して、詰めたり空けたりするとき） */
+    public void setPosition(int position) {
         this.position = position;
     }
 

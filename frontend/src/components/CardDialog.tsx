@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type MouseEvent } from 'react'
-import type { NewCard, Priority } from '../types.ts'
+import type { CardFormValues, Priority } from '../types.ts'
 
 /** 文字数の上限（要件定義書 6.1） */
 const MAX_TITLE_LENGTH = 200
@@ -12,29 +12,43 @@ const PRIORITY_CHOICES: { value: Priority; label: string }[] = [
 ]
 
 /**
- * カードを追加するダイアログ（F-05、SC-01-b）。
- * - 入力：タイトル（必須）、説明、優先度（最初は「中」）、期限日
- * - 「保存」、またはタイトルの欄で Enter → 登録する。うまくいったら親がダイアログを閉じる
- *   （日本語入力で変換を確定するための Enter では登録しない）
+ * カードの登録・詳細（更新）に使うダイアログ（F-05・F-06、SC-01-b）。
+ * - 入力：タイトル（必須）、説明、優先度、期限日。lists を渡すとステータス（どのリストに入れるか）も選べる
+ * - 「保存」、またはタイトルの欄で Enter → 保存する。うまくいったら閉じる
+ *   （日本語入力で変換を確定するための Enter では保存しない）
  * - タイトルが空（空白だけを含む）のあいだは保存できない
- * - 「キャンセル」・Esc・ダイアログの外をクリック → 登録せずに閉じる
+ * - 「キャンセル」・Esc・ダイアログの外をクリック → 保存せずに閉じる
  * - 保存に失敗したときは閉じずに、入力した内容を残す
  */
-export default function AddCardDialog({
-  listTitle,
+export default function CardDialog({
+  heading,
+  subheading,
+  initial,
+  allowNoPriority,
+  lists,
   onSave,
   onClose,
 }: {
-  listTitle: string
+  /** 見出し（「タスクを追加」「タスクの詳細」） */
+  heading: string
+  /** 見出しの横に小さく出す文字（リスト名など） */
+  subheading?: string
+  /** 最初に入っている値 */
+  initial: CardFormValues
+  /** 優先度に「なし」を選べるようにするか（詳細画面では選べる） */
+  allowNoPriority: boolean
+  /** ステータスとして選べるリスト。渡さなければステータスの欄は出さない */
+  lists?: { id: number; title: string }[]
   /** 保存できたら true を返す */
-  onSave: (newCard: NewCard) => Promise<boolean>
+  onSave: (values: CardFormValues) => Promise<boolean>
   onClose: () => void
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null)
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [priority, setPriority] = useState<Priority>('medium')
-  const [dueDate, setDueDate] = useState('')
+  const [title, setTitle] = useState(initial.text)
+  const [description, setDescription] = useState(initial.description ?? '')
+  const [priority, setPriority] = useState<Priority | null>(initial.priority)
+  const [dueDate, setDueDate] = useState(initial.dueDate ?? '')
+  const [listId, setListId] = useState(initial.listId)
   const [saving, setSaving] = useState(false)
 
   // ブラウザ標準のダイアログとして開く（後ろが暗くなり、後ろの画面は操作できなくなる）
@@ -43,6 +57,9 @@ export default function AddCardDialog({
   }, [])
 
   const canSave = title.trim() !== '' && !saving
+  const priorityChoices = allowNoPriority
+    ? [...PRIORITY_CHOICES, { value: null, label: 'なし' }]
+    : PRIORITY_CHOICES
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -53,6 +70,7 @@ export default function AddCardDialog({
       description: description.trim() === '' ? null : description,
       priority,
       dueDate: dueDate === '' ? null : dueDate,
+      listId,
     })
     setSaving(false)
     if (ok) onClose()
@@ -72,7 +90,7 @@ export default function AddCardDialog({
     <dialog
       ref={dialogRef}
       className="dialog"
-      aria-labelledby="add-card-title"
+      aria-labelledby="card-dialog-title"
       onCancel={(e) => {
         // Esc キー。ブラウザに閉じさせず、親に閉じてもらう
         e.preventDefault()
@@ -81,8 +99,9 @@ export default function AddCardDialog({
       onClick={handleBackdropClick}
     >
       <form className="dialog-body" onSubmit={handleSubmit}>
-        <h2 id="add-card-title" className="dialog-title">
-          タスクを追加<span className="dialog-sub">（{listTitle}）</span>
+        <h2 id="card-dialog-title" className="dialog-title">
+          {heading}
+          {subheading && <span className="dialog-sub">（{subheading}）</span>}
         </h2>
 
         <label className="field">
@@ -113,15 +132,27 @@ export default function AddCardDialog({
           />
         </label>
 
+        {lists && (
+          <label className="field">
+            <span className="field-label">ステータス</span>
+            <select className="input" value={listId} onChange={(e) => setListId(Number(e.target.value))}>
+              {lists.map((list) => (
+                <option key={list.id} value={list.id}>
+                  {list.title}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
+
         <fieldset className="field">
           <legend className="field-label">優先度</legend>
           <div className="radio-row">
-            {PRIORITY_CHOICES.map((choice) => (
-              <label key={choice.value} className="radio">
+            {priorityChoices.map((choice) => (
+              <label key={choice.label} className="radio">
                 <input
                   type="radio"
                   name="priority"
-                  value={choice.value}
                   checked={priority === choice.value}
                   onChange={() => setPriority(choice.value)}
                 />

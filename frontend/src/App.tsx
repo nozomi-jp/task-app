@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useReducer, useState } from 'react'
 import { fetchBoard } from './api/boardApi.ts'
-import { createCard } from './api/cardApi.ts'
+import { createCard, moveCard, updateCard } from './api/cardApi.ts'
 import Board from './components/Board.tsx'
+import CardDialog from './components/CardDialog.tsx'
 import { boardReducer } from './state/boardReducer.ts'
-import type { NewCard } from './types.ts'
+import type { Card, CardFormValues, NewCard } from './types.ts'
 import './App.css'
 
 /** エラーの理由を取り出す */
@@ -15,6 +16,7 @@ function reasonOf(error: unknown): string {
 export default function App() {
   const [board, dispatch] = useReducer(boardReducer, null) // 読み込んだボード。読み込み前は null
   const [errorMessage, setErrorMessage] = useState<string | null>(null) // 右上に赤い字で出すメッセージ
+  const [openCard, setOpenCard] = useState<{ card: Card; listId: number } | null>(null) // 詳細画面で開いているカード
 
   // 画面を開いたときに1回だけ読み込む
   useEffect(() => {
@@ -31,27 +33,68 @@ export default function App() {
     }
   }, [])
 
-  /**
-   * カードを追加する（F-05）。API で保存できたら、返ってきたカードを画面に足す。
-   * 失敗したら右上に赤い字で理由を出し、ボードを読み込み直して、データベースの本当の状態を表示する（7.2）。
-   * 戻り値は、保存できたかどうか（ダイアログを閉じるかどうかに使う）。
-   */
-  const handleAddCard = useCallback(async (listId: number, newCard: NewCard): Promise<boolean> => {
+  /** ボードを読み込み直して、データベースの本当の状態を表示する。失敗したら今の表示のまま */
+  const reloadBoard = useCallback(async () => {
     try {
-      const card = await createCard(listId, newCard)
-      dispatch({ type: 'cardAdded', listId, card })
-      setErrorMessage(null)
-      return true
-    } catch (error) {
-      setErrorMessage(`保存できませんでした（${reasonOf(error)}）`)
-      fetchBoard()
-        .then((data) => dispatch({ type: 'loaded', board: data }))
-        .catch(() => {
-          // 読み込み直しにも失敗したら、今の表示のままにする（メッセージは保存の失敗を出したまま）
-        })
-      return false
+      dispatch({ type: 'loaded', board: await fetchBoard() })
+    } catch {
+      // 読み込み直しにも失敗したら、今の表示のままにする（メッセージは保存の失敗を出したまま）
     }
   }, [])
+
+  /** 保存に失敗したとき：右上に赤い字で理由を出し、ボードを読み込み直す（7.2）。戻り値は false */
+  const handleSaveError = useCallback(
+    (error: unknown): false => {
+      setErrorMessage(`保存できませんでした（${reasonOf(error)}）`)
+      void reloadBoard()
+      return false
+    },
+    [reloadBoard],
+  )
+
+  /**
+   * カードを追加する（F-05）。API で保存できたら、返ってきたカードを画面に足す。
+   * 戻り値は、保存できたかどうか（ダイアログを閉じるかどうかに使う）。
+   */
+  const handleAddCard = useCallback(
+    async (listId: number, newCard: NewCard): Promise<boolean> => {
+      try {
+        const card = await createCard(listId, newCard)
+        dispatch({ type: 'cardAdded', listId, card })
+        setErrorMessage(null)
+        return true
+      } catch (error) {
+        return handleSaveError(error)
+      }
+    },
+    [handleSaveError],
+  )
+
+  /**
+   * 詳細画面の「保存」（F-06）。内容を更新し（API-06）、ステータスが変わっていれば、そのリストの一番下へ移す（API-08）。
+   * 内容だけなら、返ってきたカードで置き換える。移したときは、並び順が変わるのでボードを読み込み直す。
+   */
+  const handleUpdateCard = useCallback(
+    async (card: Card, currentListId: number, values: CardFormValues): Promise<boolean> => {
+      try {
+        const { listId, ...update } = values
+        const updated = await updateCard(card.id, update)
+        if (listId === currentListId) {
+          dispatch({ type: 'cardUpdated', card: updated })
+        } else {
+          // 移動先のリストのカードの枚数＝一番下の位置（0始まり）
+          const bottom = board?.lists.find((list) => list.id === listId)?.cards.length ?? 0
+          await moveCard(card.id, listId, bottom)
+          await reloadBoard()
+        }
+        setErrorMessage(null)
+        return true
+      } catch (error) {
+        return handleSaveError(error)
+      }
+    },
+    [board, handleSaveError, reloadBoard],
+  )
 
   return (
     <>
@@ -68,7 +111,23 @@ export default function App() {
       {board === null ? (
         !errorMessage && <p className="loading">読み込み中…</p>
       ) : (
-        <Board board={board} onAddCard={handleAddCard} />
+        <Board
+          board={board}
+          onAddCard={handleAddCard}
+          onOpenCard={(card, listId) => setOpenCard({ card, listId })}
+        />
+      )}
+      {openCard && board && (
+        <CardDialog
+          // 開くカードが変わったら、入力欄を作り直して、そのカードの値から始める
+          key={openCard.card.id}
+          heading="タスクの詳細"
+          initial={{ ...openCard.card, listId: openCard.listId }}
+          allowNoPriority
+          lists={board.lists.map(({ id, title }) => ({ id, title }))}
+          onSave={(values) => handleUpdateCard(openCard.card, openCard.listId, values)}
+          onClose={() => setOpenCard(null)}
+        />
       )}
     </>
   )

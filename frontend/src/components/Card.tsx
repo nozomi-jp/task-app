@@ -1,13 +1,28 @@
+import type { KeyboardEvent } from 'react'
 import type { Card as CardData, Priority } from '../types.ts'
 import { PRIORITY_LABELS, dueDateStatus, formatDueDate } from '../format.ts'
 
 /**
  * カード1枚。タイトルと、その下に説明（あれば小さく）、右側に期限・優先度の印を出す（F-05・F-11・F-12）。
- * 今は表示だけ。印を押しても何も起きない。
+ * クリック（またはキーボードで選んで Enter）すると、詳細画面を開く（F-06）。
  */
-export default function Card({ card }: { card: CardData }) {
+export default function Card({ card, onOpen }: { card: CardData; onOpen: () => void }) {
+  function handleKeyDown(e: KeyboardEvent<HTMLDivElement>) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      onOpen()
+    }
+  }
+
   return (
-    <div className="card">
+    <div
+      className="card"
+      role="button"
+      tabIndex={0}
+      aria-label={`${card.text} の詳細を開く`}
+      onClick={onOpen}
+      onKeyDown={handleKeyDown}
+    >
       <div className="card-body">
         <span className="card-text">{card.text}</span>
         {card.description !== null && <p className="card-description">{card.description}</p>}

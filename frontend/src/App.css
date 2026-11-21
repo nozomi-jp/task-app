@@ -83,6 +83,15 @@
   border-radius: 8px;
   box-shadow: 0 1px 1px rgba(9, 30, 66, 0.25);
   word-break: break-all;
+  cursor: pointer;
+}
+
+/* クリックすると詳細画面が開くことがわかるように */
+.card:hover { box-shadow: 0 0 0 2px #c1c7d0; }
+
+.card:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
 }
 
 /* タイトルと、その下の説明 */
