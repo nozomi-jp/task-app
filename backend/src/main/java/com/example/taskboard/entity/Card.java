@@ -43,6 +43,16 @@ public class Card {
         // JPA が使う
     }
 
+    /**
+     * 新しいカードを作る（F-05）。期限と優先度は付けない。
+     * id は保存したときにデータベースが決める。created_at・updated_at はデータベースの初期値（now()）が入る。
+     */
+    public Card(Long listId, String text, Integer position) {
+        this.listId = listId;
+        this.text = text;
+        this.position = position;
+    }
+
     public Long getId() {
         return id;
     }
