@@ -213,7 +213,7 @@ v2.0で、発注者から次の指定がありました。
 | @types/react・@types/react-dom（React の型の説明書） | 19.3.0 | 2026-11-21 |
 | @types/node（Node.js の型の説明書） | 26.6.6（Node.js 26 に合わせた。ひな型の指定は 24 系） | 2026-11-21 |
 | oxlint（書き方のチェック） | 1.94.0（Vite のひな型が ESLint の代わりに入れるもの） | 2026-11-21 |
-| dnd-kit | 未定（ドラッグ&ドロップを作るときに上の方針で決める） | |
+| dnd-kit（ドラッグ&ドロップ） | @dnd-kit/core 6.3.1、@dnd-kit/sortable 10.0.0、@dnd-kit/utilities 3.2.2（安定版の最新。0.x の試験版 @dnd-kit/react は使わない） | 2026-11-22 |
 
 「Spring Boot が選ぶ」と書いたものは、`pom.xml` で版を指定していない。Spring Boot 4.1.2 が、一緒に動くことを確かめた版を自動で選ぶ（Spring Boot の版を上げると、これらも一緒に上がる）。今の版は `backend` フォルダで `.\mvnw.cmd dependency:list` を実行すると確かめられる。画面のライブラリの版は `frontend` フォルダで `npm.cmd ls` で確かめられる。
 

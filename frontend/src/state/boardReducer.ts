@@ -9,6 +9,8 @@ export type BoardAction =
   | { type: 'cardAdded'; listId: number; card: Card }
   /** カードの内容を更新した（API が返したカードで、同じ id のカードを置き換える。場所は変えない） */
   | { type: 'cardUpdated'; card: Card }
+  /** カードを、指定したリストの指定した位置（0始まり）へ動かした（ドラッグ＆ドロップ） */
+  | { type: 'cardMoved'; cardId: number; toListId: number; toIndex: number }
 
 /** 読み込む前は null */
 export type BoardState = Board | null
@@ -32,5 +34,31 @@ export function boardReducer(state: BoardState, action: BoardAction): BoardState
           cards: list.cards.map((card) => (card.id === action.card.id ? action.card : card)),
         })),
       }
+    case 'cardMoved':
+      return state === null ? state : moveCardInBoard(state, action.cardId, action.toListId, action.toIndex)
   }
+}
+
+/** カードを今の場所から取り出し、移動先のリストの指定の位置に差し込んだ、新しいボードを返す */
+export function moveCardInBoard(board: Board, cardId: number, toListId: number, toIndex: number): Board {
+  const moving = board.lists.flatMap((list) => list.cards).find((card) => card.id === cardId)
+  if (moving === undefined) return board
+  const lists = board.lists.map((list) => ({ ...list, cards: list.cards.filter((card) => card.id !== cardId) }))
+  return {
+    lists: lists.map((list) => {
+      if (list.id !== toListId) return list
+      const cards = [...list.cards]
+      cards.splice(Math.min(Math.max(toIndex, 0), cards.length), 0, moving)
+      return { ...list, cards }
+    }),
+  }
+}
+
+/** カードが入っているリストの id と、リストの中の位置（0始まり）。見つからなければ null */
+export function findCardPlace(board: Board, cardId: number): { listId: number; index: number } | null {
+  for (const list of board.lists) {
+    const index = list.cards.findIndex((card) => card.id === cardId)
+    if (index !== -1) return { listId: list.id, index }
+  }
+  return null
 }
