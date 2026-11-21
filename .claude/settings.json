@@ -1,4 +1,11 @@
 {
+  "permissions": {
+    "allow": [
+      "PowerShell(./.claude/skills/start-servers/scripts/free-port.ps1 *)",
+      "PowerShell(.\\.claude\\skills\\start-servers\\scripts\\free-port.ps1 *)",
+      "Bash(powershell -NoProfile -ExecutionPolicy Bypass -File .claude/skills/start-servers/scripts/free-port.ps1 *)"
+    ]
+  },
   "hooks": {
     "PreToolUse": [
       {
@@ -9,6 +16,17 @@
             "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-git.sh\"",
             "timeout": 10,
             "statusMessage": "Git の開発ルールを確認中"
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|PowerShell|Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-ports.sh\"",
+            "timeout": 10,
+            "statusMessage": "サーバーのポートの決まりを確認中"
           }
         ]
       }
