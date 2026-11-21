@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: guide-user-to-start
+expected_outcome: |
+  サーバーは起動せず、ユーザー向けの手順を書く。ターミナルを開くところから始め、ターミナルを2つ使い、
+  cd と次のコマンドを分け、PowerShell では npm.cmd と書き、起動できた合図・開くURL（5173）・止め方まで書く。

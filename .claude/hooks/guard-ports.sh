@@ -12,7 +12,7 @@ input="$(cat)"
 
 block() {
   echo "ブロックしました: $1" >&2
-  echo "ルール（CLAUDE.md「サーバーの起動とポート」）: サーバーはバックエンド 8080・画面 5173 だけで起動する。ふさがっていたら .claude/scripts/free-port.ps1 で空けてから、同じポートで起動する。" >&2
+  echo "ルール（CLAUDE.md「サーバーの起動とポート」）: サーバーはバックエンド 8080・画面 5173 だけで起動する。ふさがっていたら .claude/skills/start-servers/scripts/free-port.ps1 で空けてから、同じポートで起動する。" >&2
   exit 2
 }
 

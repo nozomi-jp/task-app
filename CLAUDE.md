@@ -57,8 +57,8 @@ GitHub: https://github.com/nozomi-jp/task-app （操作は `gh` コマンドで�
 | バックエンド（Spring Boot） | 8080 | `backend` で `.\mvnw.cmd spring-boot:run` |
 | 画面（Vite の開発サーバー） | 5173 | `frontend` で `npm.cmd run dev` |
 
-- サーバーを起動して動作確認するときは、スキル `start-servers`（`.claude/skills/start-servers/SKILL.md`）の手順に従う。
-- 起動する前にポートを確かめ、ふさがっていたら `./.claude/scripts/free-port.ps1 -Port 8080`（または `5173`）で、使っているプロセスを止めてポートを空けてから起動する。止めたら、何を止めたかをユーザーに伝える。
+- サーバーを起動して動作確認するときは、スキル `start-servers`（`.claude/skills/start-servers/SKILL.md`）の手順に従う。このスキルは公式の skill-creator の形で作ってあり、ポートを空けるスクリプト（`scripts/`）とテストの依頼文（`evals/`）も同じフォルダに入っている。スキルを変えるときも skill-creator を使う。
+- 起動する前にポートを確かめ、ふさがっていたら `./.claude/skills/start-servers/scripts/free-port.ps1 -Port 8080`（または `5173`）で、使っているプロセスを止めてポートを空けてから起動する。止めたら、何を止めたかをユーザーに伝える。
 - プロセスを止めてよいのは、このスクリプトで 8080・5173 を空けるときだけ（発注者が 2026-11-21 に許可）。ほかのプロセスの停止（`Stop-Process`・`taskkill` など）は、これまでどおり禁止。
 - 強制のしくみ：
   - フック `.claude/hooks/guard-ports.sh`：別のポートを指定する起動（`--port`、`server.port` の上書き、`SERVER_PORT`）、`strictPort` を外すこと、設定ファイルのポートの書き換えを止める。

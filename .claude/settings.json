@@ -1,9 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "PowerShell(./.claude/scripts/free-port.ps1 *)",
-      "PowerShell(.\\.claude\\scripts\\free-port.ps1 *)",
-      "Bash(powershell -NoProfile -ExecutionPolicy Bypass -File .claude/scripts/free-port.ps1 *)"
+      "PowerShell(./.claude/skills/start-servers/scripts/free-port.ps1 *)",
+      "PowerShell(.\\.claude\\skills\\start-servers\\scripts\\free-port.ps1 *)",
+      "Bash(powershell -NoProfile -ExecutionPolicy Bypass -File .claude/skills/start-servers/scripts/free-port.ps1 *)"
     ]
   },
   "hooks": {

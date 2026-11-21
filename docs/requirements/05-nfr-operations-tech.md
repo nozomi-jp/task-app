@@ -104,7 +104,7 @@ Docker Desktop は、Windows にサインインすると自動で起動するよ
 | --- | --- | --- |
 | ブラウザに「このサイトにアクセスできません」 | サーバーを起動したか | 起動する（12.2） |
 | 画面に赤い文字「保存できませんでした」 | ターミナルにエラーが出ていないか | エラー内容を読む。サーバーが止まっていれば起動し直す |
-| 起動時に「Port 8080 was already in use」、画面の起動時に「Port 5173 is already in use」 | 8080番・5173番をほかのアプリが使っていないか（前に起動したサーバーが残っていないか） | 前に起動したターミナルで Ctrl + C を押すか、リポジトリのフォルダで `./.claude/scripts/free-port.ps1 -Port 8080`（または `5173`）を実行して、使っているプロセスを止める。**別のポートで起動してはいけない**（12.6） |
+| 起動時に「Port 8080 was already in use」、画面の起動時に「Port 5173 is already in use」 | 8080番・5173番をほかのアプリが使っていないか（前に起動したサーバーが残っていないか） | 前に起動したターミナルで Ctrl + C を押すか、リポジトリのフォルダで `./.claude/skills/start-servers/scripts/free-port.ps1 -Port 8080`（または `5173`）を実行して、使っているプロセスを止める。**別のポートで起動してはいけない**（12.6） |
 | 起動時に「Connection refused」など、データベースにつながらないエラー | Docker Desktop が起動しているか。`docker compose ps` で `db` が `healthy` か | Docker Desktop を起動する。`db` がなければ `docker compose up -d` |
 | `docker compose up -d` で「port is already allocated」 | 5432番をほかのアプリが使っていないか（Windows 版 PostgreSQL のサービス `postgresql-x64-18` が動いていないか） | そのアプリ・サービスを止める |
 | 起動時に「password authentication failed」 | 環境変数 `TASKBOARD_DB_PASSWORD` が正しいか | 設定し直し、VS Code を開き直す。データベースを最初に作ったあとにパスワードを変えた場合は、データベース側のパスワードは変わらないので注意 |
