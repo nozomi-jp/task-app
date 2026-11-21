@@ -193,6 +193,15 @@ v2.0で、発注者から次の指定がありました。
 | JDK（Eclipse Temurin） | 25.0.5 | 2026-11-19 |
 | Spring Boot | 4.1.2 | 2026-11-19 |
 | Maven（Maven Wrapper で自動で入る） | 3.10.1 | 2026-11-19 |
+| Spring Framework（Spring Boot が選ぶ） | 7.0.10 | 2026-11-21 |
+| Spring Data JPA（Spring Boot が選ぶ） | 4.1.2 | 2026-11-21 |
+| Hibernate ORM（JPA の中身。Spring Boot が選ぶ） | 7.4.13.Final | 2026-11-21 |
+| Hibernate Validator（入力チェック。Spring Boot が選ぶ） | 9.1.5.Final | 2026-11-21 |
+| Flyway（テーブルを作る道具。Spring Boot が選ぶ） | 12.4.0（flyway-core・flyway-database-postgresql） | 2026-11-21 |
+| PostgreSQL JDBC ドライバー（Java から PostgreSQL につなぐ部品。Spring Boot が選ぶ） | 42.7.14 | 2026-11-21 |
+| HikariCP（データベースへの接続をまとめて管理する部品。Spring Boot が選ぶ） | 7.0.2 | 2026-11-21 |
+| Tomcat（Spring Boot の中で動く Web サーバー。Spring Boot が選ぶ） | 11.0.27 | 2026-11-21 |
+| Jackson（JSON に変換する部品。Spring Boot が選ぶ） | 3.1.7 | 2026-11-21 |
 | PostgreSQL（Docker イメージ `postgres:18.7`） | 18.7（今サポートされている 15〜18 のうち最新） | 2026-11-20 |
 | Docker Desktop | 29.9.3（Docker Compose v5.7.0） | 2026-11-20 |
 | Node.js（LTS） | 26.13.1（npm 11.20.0） | 2026-11-21 |
@@ -205,6 +214,8 @@ v2.0で、発注者から次の指定がありました。
 | @types/node（Node.js の型の説明書） | 26.6.6（Node.js 26 に合わせた。ひな型の指定は 24 系） | 2026-11-21 |
 | oxlint（書き方のチェック） | 1.94.0（Vite のひな型が ESLint の代わりに入れるもの） | 2026-11-21 |
 | dnd-kit | 未定（ドラッグ&ドロップを作るときに上の方針で決める） | |
+
+「Spring Boot が選ぶ」と書いたものは、`pom.xml` で版を指定していない。Spring Boot 4.1.2 が、一緒に動くことを確かめた版を自動で選ぶ（Spring Boot の版を上げると、これらも一緒に上がる）。今の版は `backend` フォルダで `.\mvnw.cmd dependency:list` を実行すると確かめられる。画面のライブラリの版は `frontend` フォルダで `npm.cmd ls` で確かめられる。
 
 ### 13.5 ファイル構成
 
