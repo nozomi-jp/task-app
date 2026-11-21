@@ -1,5 +1,6 @@
-import type { TaskList } from '../types.ts'
-import AddCardForm from './AddCardForm.tsx'
+import { useState } from 'react'
+import type { NewCard, TaskList } from '../types.ts'
+import AddCardDialog from './AddCardDialog.tsx'
 import Card from './Card.tsx'
 
 /** リスト1つ。リスト名と、その中のカードを上から並び順どおりに出し、下に「+ カードを追加」を置く */
@@ -8,8 +9,10 @@ export default function ListColumn({
   onAddCard,
 }: {
   list: TaskList
-  onAddCard: (listId: number, text: string) => Promise<boolean>
+  onAddCard: (listId: number, newCard: NewCard) => Promise<boolean>
 }) {
+  const [adding, setAdding] = useState(false) // カードを追加するダイアログを開いているか
+
   return (
     <section className="list">
       <div className="list-header">
@@ -20,7 +23,16 @@ export default function ListColumn({
           <Card key={card.id} card={card} />
         ))}
       </div>
-      <AddCardForm onAdd={(text) => onAddCard(list.id, text)} />
+      <button type="button" className="add-card" onClick={() => setAdding(true)}>
+        + カードを追加
+      </button>
+      {adding && (
+        <AddCardDialog
+          listTitle={list.title}
+          onSave={(newCard) => onAddCard(list.id, newCard)}
+          onClose={() => setAdding(false)}
+        />
+      )}
     </section>
   )
 }

@@ -40,10 +40,7 @@ public class BoardService {
                 .stream()
                 .collect(Collectors.groupingBy(
                         Card::getListId,
-                        Collectors.mapping(
-                                card -> new CardResponse(card.getId(), card.getText(), card.getDueDate(),
-                                        card.getPriority()),
-                                Collectors.toList())));
+                        Collectors.mapping(CardResponse::from, Collectors.toList())));
 
         List<ListResponse> lists = taskListRepository.findAllByOrderByPositionAsc()
                 .stream()

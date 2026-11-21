@@ -8,6 +8,8 @@ export type Priority = 'high' | 'medium' | 'low'
 export type Card = {
   id: number
   text: string
+  /** 説明。改行を含んでよい。なければ null */
+  description: string | null
   /** 期限。"2026-11-25" の形の文字。なければ null */
   dueDate: string | null
   priority: Priority | null
@@ -18,6 +20,14 @@ export type TaskList = {
   id: number
   title: string
   cards: Card[]
+}
+
+/** カードを登録するときに送るもの（API-05 POST）。タイトル以外はなくてもよい（null） */
+export type NewCard = {
+  text: string
+  description: string | null
+  priority: Priority | null
+  dueDate: string | null
 }
 
 /** ボード全体（API-01 GET /api/board の返事）。リストは左から並び順どおり */

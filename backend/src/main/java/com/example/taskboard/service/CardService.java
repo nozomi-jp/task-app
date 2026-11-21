@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.taskboard.dto.BoardResponse.CardResponse;
+import com.example.taskboard.dto.CreateCardRequest;
 import com.example.taskboard.entity.Card;
 import com.example.taskboard.repository.CardRepository;
 import com.example.taskboard.repository.TaskListRepository;
@@ -29,12 +30,18 @@ public class CardService {
      * @throws NotFoundException リストがないとき
      */
     @Transactional
-    public CardResponse createCard(Long listId, String text) {
+    public CardResponse createCard(Long listId, CreateCardRequest request) {
         if (!taskListRepository.existsById(listId)) {
             throw new NotFoundException("リストが見つかりません（ID " + listId + "）");
         }
         int position = cardRepository.findMaxPositionByListId(listId) + 1;
-        Card saved = cardRepository.save(new Card(listId, text, position));
-        return new CardResponse(saved.getId(), saved.getText(), saved.getDueDate(), saved.getPriority());
+        Card card = new Card(listId, request.text(), blankToNull(request.description()), request.dueDate(),
+                request.priority(), position);
+        return CardResponse.from(cardRepository.save(card));
+    }
+
+    /** 空、または空白だけの説明は「説明なし」（null）として保存する */
+    private static String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value;
     }
 }

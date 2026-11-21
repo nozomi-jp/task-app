@@ -27,6 +27,10 @@ public class Card {
     @Column(nullable = false, length = 200)
     private String text;
 
+    /** 説明。なければ null（改行を含んでよい） */
+    @Column(length = 1000)
+    private String description;
+
     /** 期限。なければ null */
     @Column(name = "due_date")
     private LocalDate dueDate;
@@ -44,12 +48,15 @@ public class Card {
     }
 
     /**
-     * 新しいカードを作る（F-05）。期限と優先度は付けない。
+     * 新しいカードを作る（F-05）。説明・期限・優先度は null でもよい。
      * id は保存したときにデータベースが決める。created_at・updated_at はデータベースの初期値（now()）が入る。
      */
-    public Card(Long listId, String text, Integer position) {
+    public Card(Long listId, String text, String description, LocalDate dueDate, String priority, Integer position) {
         this.listId = listId;
         this.text = text;
+        this.description = description;
+        this.dueDate = dueDate;
+        this.priority = priority;
         this.position = position;
     }
 
@@ -63,6 +70,10 @@ public class Card {
 
     public String getText() {
         return text;
+    }
+
+    public String getDescription() {
+        return description;
     }
 
     public LocalDate getDueDate() {

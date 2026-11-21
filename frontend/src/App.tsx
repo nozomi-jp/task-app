@@ -3,6 +3,7 @@ import { fetchBoard } from './api/boardApi.ts'
 import { createCard } from './api/cardApi.ts'
 import Board from './components/Board.tsx'
 import { boardReducer } from './state/boardReducer.ts'
+import type { NewCard } from './types.ts'
 import './App.css'
 
 /** エラーの理由を取り出す */
@@ -33,11 +34,11 @@ export default function App() {
   /**
    * カードを追加する（F-05）。API で保存できたら、返ってきたカードを画面に足す。
    * 失敗したら右上に赤い字で理由を出し、ボードを読み込み直して、データベースの本当の状態を表示する（7.2）。
-   * 戻り値は、保存できたかどうか（入力欄を空にするかどうかに使う）。
+   * 戻り値は、保存できたかどうか（ダイアログを閉じるかどうかに使う）。
    */
-  const handleAddCard = useCallback(async (listId: number, text: string): Promise<boolean> => {
+  const handleAddCard = useCallback(async (listId: number, newCard: NewCard): Promise<boolean> => {
     try {
-      const card = await createCard(listId, text)
+      const card = await createCard(listId, newCard)
       dispatch({ type: 'cardAdded', listId, card })
       setErrorMessage(null)
       return true
