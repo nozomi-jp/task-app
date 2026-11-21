@@ -97,6 +97,44 @@
   margin-left: auto;
 }
 
+/* ===== 「+ カードを追加」と入力欄（F-05・SC-01-b） ===== */
+.add-card {
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--text-sub);
+  text-align: left;
+}
+
+.add-card:hover { background: #dcdfe4; }
+
+.input-new-card { margin-top: 8px; }
+
+.input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  font: inherit;
+  color: var(--text);
+}
+
+.hint {
+  margin: 6px 4px 0;
+  color: var(--text-sub);
+  font-size: 11px;
+}
+
+/* キーボード操作中は、今どこを操作しているかを見せる（NFR-10） */
+button:focus-visible,
+.input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
 /* ===== 期限・優先度の印（F-11・F-12） ===== */
 .chip {
   padding: 1px 7px;
