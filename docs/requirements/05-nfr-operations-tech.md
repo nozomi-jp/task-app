@@ -216,6 +216,7 @@ v2.0で、発注者から次の指定がありました。
 └── backend/                     バックエンド（Spring Boot）
     ├── pom.xml                  使うライブラリの一覧と版（NFR-28）
     ├── mvnw / mvnw.cmd          Maven Wrapper
+    ├── db/test-data.sql         動作確認用のテストデータ（手で入れる。Flyway では入れない。入れ方はファイルの先頭）
     └── src/main/
         ├── java/…/taskboard/
         │   ├── controller/      受付：URLとメソッドごとの入口（API-01〜09）
