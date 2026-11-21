@@ -96,6 +96,22 @@ export default function App() {
     [board, handleSaveError, reloadBoard],
   )
 
+  /**
+   * ドラッグ＆ドロップで置いた場所を保存する（F-08・F-09、API-08）。
+   * 画面ではもう動かしてあるので、保存できたらそのまま。失敗したら赤い字で理由を出し、読み込み直して元の状態に戻す。
+   */
+  const handleCommitMove = useCallback(
+    async (cardId: number, listId: number, position: number) => {
+      try {
+        await moveCard(cardId, listId, position)
+        setErrorMessage(null)
+      } catch (error) {
+        handleSaveError(error)
+      }
+    },
+    [handleSaveError],
+  )
+
   return (
     <>
       <header className="header">
@@ -115,6 +131,9 @@ export default function App() {
           board={board}
           onAddCard={handleAddCard}
           onOpenCard={(card, listId) => setOpenCard({ card, listId })}
+          onPreviewMove={(cardId, toListId, toIndex) => dispatch({ type: 'cardMoved', cardId, toListId, toIndex })}
+          onRestore={(before) => dispatch({ type: 'loaded', board: before })}
+          onCommitMove={handleCommitMove}
         />
       )}
       {openCard && board && (
