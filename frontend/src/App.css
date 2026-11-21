@@ -85,9 +85,22 @@
   word-break: break-all;
 }
 
-.card-text {
+/* タイトルと、その下の説明 */
+.card-body {
   flex: 1;
   min-width: 6em;
+}
+
+/* 説明は小さく、薄い色で。長いときは3行までにして「…」 */
+.card-description {
+  margin: 2px 0 0;
+  color: var(--text-sub);
+  font-size: 12px;
+  white-space: pre-wrap;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .card-meta {
@@ -111,21 +124,119 @@
 
 .add-card:hover { background: #dcdfe4; }
 
-.input-new-card { margin-top: 8px; }
+/* ===== カードを追加するダイアログ（SC-01-b） ===== */
+.dialog {
+  width: min(420px, calc(100vw - 32px));
+  padding: 0;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 8px 24px rgba(9, 30, 66, 0.3);
+  color: var(--text);
+}
+
+/* ダイアログの後ろを暗くする */
+.dialog::backdrop {
+  background: rgba(9, 30, 66, 0.45);
+}
+
+.dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 18px 20px;
+}
+
+.dialog-title {
+  margin: 0;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 15px;
+}
+
+.dialog-sub {
+  margin-left: 4px;
+  color: var(--text-sub);
+  font-size: 12px;
+  font-weight: normal;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.field-label {
+  padding: 0;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.required {
+  margin-left: 2px;
+  color: var(--error);
+}
 
 .input {
   width: 100%;
   padding: 8px 10px;
-  border: 1px solid var(--accent);
+  border: 1px solid var(--border);
   border-radius: 8px;
   font: inherit;
   color: var(--text);
 }
 
+.textarea {
+  resize: vertical;
+}
+
+.radio-row {
+  display: flex;
+  gap: 16px;
+}
+
+.radio {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
 .hint {
-  margin: 6px 4px 0;
+  margin: -6px 0 0;
   color: var(--text-sub);
   font-size: 11px;
+}
+
+.dialog-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.button {
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  background: var(--list-bg);
+}
+
+.button:hover { background: #dcdfe4; }
+
+.button.primary {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.button.primary:hover { background: #0055cc; }
+
+/* タイトルが空のあいだは押せない */
+.button.primary:disabled {
+  background: #a9c5f0;
+  cursor: not-allowed;
 }
 
 /* キーボード操作中は、今どこを操作しているかを見せる（NFR-10） */

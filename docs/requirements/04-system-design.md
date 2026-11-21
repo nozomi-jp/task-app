@@ -57,7 +57,8 @@ erDiagram
     cards {
         bigint id PK "カードID（自動採番）"
         bigint list_id FK "入っているリストのID"
-        varchar text "内容（1〜200文字）"
+        varchar text "内容・タイトル（1〜200文字）"
+        varchar description "説明（1000文字まで、なしはNULL）"
         date due_date "期限（なしはNULL）"
         varchar priority "優先度 high/medium/low（なしはNULL）"
         integer position "リスト内の並び順（0始まり）"
@@ -90,7 +91,8 @@ erDiagram
 | --- | --- | --- | --- |
 | id | bigint | ○ | 主キー。自動で番号を振る |
 | list_id | bigint | ○ | 外部キー（lists.id）。**リストを削除すると、中のカードも一緒に削除する**（`ON DELETE CASCADE`、F-04） |
-| text | varchar(200) | ○ | 1〜200文字。空文字は入れられない（CHECK制約） |
+| text | varchar(200) | ○ | 内容（タイトル）。1〜200文字。空文字は入れられない（CHECK制約） |
+| description | varchar(1000) | | 説明（F-05、v2.9 で追加）。1000文字まで、改行を含んでよい。説明がないときは空（NULL）。空文字は入れられない（CHECK制約） |
 | due_date | date | | 期限（F-11）。期限がないときは空（NULL） |
 | priority | varchar(6) | | 優先度（F-12）。`high`・`medium`・`low` のどれかだけ入れられる（CHECK制約）。ないときは空（NULL） |
 | position | integer | ○ | リスト内の並び順。0から始まる |
@@ -107,12 +109,13 @@ erDiagram
 | --- | --- |
 | `V1__create_tables.sql` | `lists`・`cards` テーブルを作る |
 | `V2__insert_initial_lists.sql` | 「ToDo」「進行中」「完了」の3つのリストを入れる |
+| `V3__add_card_description.sql` | `cards` に `description`（説明）の列を足す（v2.9）。今あるカードは説明なし（NULL）のまま残る |
 
 V2 は**最初の1回しか実行されない**ので、初期データは「テーブルを最初に作ったときだけ」入ります。
 
 「リストが0件なら3つ入れる」という作りにはしません。F-04でリストを全部消してよいことにしているため、そうすると、全部消して再起動したときに3つのリストが勝手に復活してしまいます。
 
-テーブルの形をあとから変えるときは、すでにあるファイルは書き換えず、`V3__...sql` のように新しいファイルを足します。
+テーブルの形をあとから変えるときは、すでにあるファイルは書き換えず、`V4__...sql` のように新しいファイルを足します。
 
 ### 9.4 並び順の更新
 
@@ -128,13 +131,14 @@ V2 は**最初の1回しか実行されない**ので、初期データは「テ
 | API-02 | POST | `/api/lists` | リストを追加する | `{"title": "保留"}` | 201：追加したリスト |
 | API-03 | PATCH | `/api/lists/{id}` | リスト名を変更する | `{"title": "やること"}` | 200：変更後のリスト |
 | API-04 | DELETE | `/api/lists/{id}` | リストを削除する（中のカードも） | なし | 204：返事の中身なし |
-| API-05 | POST | `/api/lists/{id}/cards` | カードを一番下に追加する | `{"text": "買い物"}` | 201：追加したカード |
+| API-05 | POST | `/api/lists/{id}/cards` | カードを一番下に追加する | `{"text": "買い物", "description": "牛乳と卵", "priority": "medium", "dueDate": "2026-11-25"}`（`text` 以外は省略または `null` でよい） | 201：追加したカード |
 | API-06 | PATCH | `/api/cards/{id}` | カードの内容・期限・優先度を変更する | `{"text": "買い物に行く"}`、`{"dueDate": "2026-11-25"}`、`{"priority": "high"}` など | 200：変更後のカード |
 | API-07 | DELETE | `/api/cards/{id}` | カードを削除する | なし | 204：返事の中身なし |
 | API-08 | PUT | `/api/cards/{id}/position` | カードを移動・並べ替えする | `{"listId": 2, "position": 0}` | 200：移動後のカード |
 | API-09 | POST | `/api/lists/{id}/sort` | リストの中のカードを期限順・優先度順に並べ替える（F-13） | `{"by": "dueDate"}` または `{"by": "priority"}` | 200：並べ替えた後のリスト（カードを並び順どおりに含む） |
 
 - API-06 は、送った項目だけを変える。期限・優先度を外すときは `null` を送る（例：`{"dueDate": null}`）。「項目を送らなかった」と「`null` を送った」を区別する必要があるので、作るときに注意する
+- API-05 の `description` が空、または空白だけのときは、説明なし（`null`）として保存する
 - API-08の `position` は、移動先のリストで上から何番目に置くか（0始まり）です。
 - API-09 の並べ方のルールは F-13 に従う
 - `/api` で始まらないURLには、画面のファイルを返す
@@ -148,8 +152,8 @@ V2 は**最初の1回しか実行されない**ので、初期データは「テ
       "id": 1,
       "title": "ToDo",
       "cards": [
-        { "id": 10, "text": "要件定義を書く", "dueDate": "2026-11-18", "priority": "high" },
-        { "id": 11, "text": "画面を作る", "dueDate": null, "priority": null }
+        { "id": 10, "text": "要件定義を書く", "description": "機能・画面・APIを決める", "dueDate": "2026-11-18", "priority": "high" },
+        { "id": 11, "text": "画面を作る", "description": null, "dueDate": null, "priority": null }
       ]
     },
     { "id": 2, "title": "進行中", "cards": [] },

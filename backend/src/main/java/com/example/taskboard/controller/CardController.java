@@ -30,11 +30,12 @@ public class CardController {
     /**
      * API-05：カードをリストの一番下に追加する。
      * 登録（新しく作る）なので POST を使い、成功したら 201（Created：作成した）と、追加したカードを返す。
-     * {@code @Valid} で CreateCardRequest のチェック（空欄・200文字・改行）を行い、違反していれば 400 になる。
+     * {@code @Valid} で CreateCardRequest のチェック（タイトルの空欄・200文字・改行、説明の1000文字、優先度の値）を行い、
+     * 違反していれば 400 になる。
      */
     @PostMapping("/lists/{listId}/cards")
     @ResponseStatus(HttpStatus.CREATED)
     public CardResponse createCard(@PathVariable Long listId, @Valid @RequestBody CreateCardRequest request) {
-        return cardService.createCard(listId, request.text());
+        return cardService.createCard(listId, request);
     }
 }
