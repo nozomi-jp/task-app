@@ -287,6 +287,14 @@
   font-size: 11px;
 }
 
+/* 保存できなかった理由（ボタンの上） */
+.dialog-error {
+  margin: 0;
+  color: var(--error);
+  font-size: 12px;
+  font-weight: bold;
+}
+
 .dialog-buttons {
   display: flex;
   justify-content: flex-end;

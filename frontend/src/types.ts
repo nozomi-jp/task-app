@@ -39,6 +39,9 @@ export type SortKey = 'dueDate' | 'priority'
 /** 登録・詳細のダイアログで入力する値。listId はステータス（どのリストに入れるか） */
 export type CardFormValues = NewCard & { listId: number }
 
+/** 保存の結果。うまくいったら null、失敗したら画面に出す理由 */
+export type SaveResult = string | null
+
 /** ボード全体（API-01 GET /api/board の返事）。リストは左から並び順どおり */
 export type Board = {
   lists: TaskList[]

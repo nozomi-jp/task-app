@@ -13,7 +13,7 @@ import {
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { detectDropTarget, parseDragId } from '../dnd.ts'
 import { findCardPlace, moveCardInBoard } from '../state/boardReducer.ts'
-import type { Board as BoardData, Card, NewCard, SortKey } from '../types.ts'
+import type { Board as BoardData, Card, NewCard, SaveResult, SortKey } from '../types.ts'
 import { CardOverlay } from './Card.tsx'
 import ListColumn from './ListColumn.tsx'
 
@@ -34,7 +34,7 @@ export default function Board({
   onCommitMove,
 }: {
   board: BoardData
-  onAddCard: (listId: number, newCard: NewCard) => Promise<boolean>
+  onAddCard: (listId: number, newCard: NewCard) => Promise<SaveResult>
   onOpenCard: (card: Card, listId: number) => void
   /** カードを削除する（API-07） */
   onDeleteCard: (cardId: number) => void
