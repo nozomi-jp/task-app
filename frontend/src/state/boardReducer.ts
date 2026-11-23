@@ -9,6 +9,8 @@ export type BoardAction =
   | { type: 'cardAdded'; listId: number; card: Card }
   /** カードの内容を更新した（API が返したカードで、同じ id のカードを置き換える。場所は変えない） */
   | { type: 'cardUpdated'; card: Card }
+  /** カードを削除した */
+  | { type: 'cardDeleted'; cardId: number }
   /** カードを、指定したリストの指定した位置（0始まり）へ動かした（ドラッグ＆ドロップ） */
   | { type: 'cardMoved'; cardId: number; toListId: number; toIndex: number }
 
@@ -32,6 +34,14 @@ export function boardReducer(state: BoardState, action: BoardAction): BoardState
         lists: state.lists.map((list) => ({
           ...list,
           cards: list.cards.map((card) => (card.id === action.card.id ? action.card : card)),
+        })),
+      }
+    case 'cardDeleted':
+      if (state === null) return state
+      return {
+        lists: state.lists.map((list) => ({
+          ...list,
+          cards: list.cards.filter((card) => card.id !== action.cardId),
         })),
       }
     case 'cardMoved':

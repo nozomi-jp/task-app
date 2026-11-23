@@ -28,6 +28,7 @@ export default function Board({
   board,
   onAddCard,
   onOpenCard,
+  onDeleteCard,
   onPreviewMove,
   onRestore,
   onCommitMove,
@@ -35,6 +36,8 @@ export default function Board({
   board: BoardData
   onAddCard: (listId: number, newCard: NewCard) => Promise<boolean>
   onOpenCard: (card: Card, listId: number) => void
+  /** カードを削除する（API-07） */
+  onDeleteCard: (cardId: number) => void
   /** 画面の上だけで、カードを仮に動かす */
   onPreviewMove: (cardId: number, toListId: number, toIndex: number) => void
   /** つかむ前のボードに戻す */
@@ -130,7 +133,13 @@ export default function Board({
     >
       <main className="board">
         {board.lists.map((list) => (
-          <ListColumn key={list.id} list={list} onAddCard={onAddCard} onOpenCard={onOpenCard} />
+          <ListColumn
+            key={list.id}
+            list={list}
+            onAddCard={onAddCard}
+            onOpenCard={onOpenCard}
+            onDeleteCard={onDeleteCard}
+          />
         ))}
       </main>
       {/* つかんでいる間、マウスについてくるカード */}

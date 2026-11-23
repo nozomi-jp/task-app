@@ -1,6 +1,7 @@
 package com.example.taskboard.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,7 +21,7 @@ import jakarta.validation.Valid;
 
 /**
  * カードについての API の受付。
- * 検索は GET、登録は POST、更新は PATCH（中身の一部を変える）・PUT（位置を置き換える）を使う。
+ * 検索は GET、登録は POST、更新は PATCH（中身の一部を変える）・PUT（位置を置き換える）、削除は DELETE を使う。
  */
 @RestController
 @RequestMapping("/api")
@@ -51,6 +52,16 @@ public class CardController {
     @PatchMapping("/cards/{cardId}")
     public CardResponse updateCard(@PathVariable Long cardId, @Valid @RequestBody UpdateCardRequest request) {
         return cardService.updateCard(cardId, request);
+    }
+
+    /**
+     * API-07：カードを削除する（物理削除。データベースから行ごとなくなる）。
+     * 成功したら 204（No Content：成功したが、返す中身はない）。
+     */
+    @DeleteMapping("/cards/{cardId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCard(@PathVariable Long cardId) {
+        cardService.deleteCard(cardId);
     }
 
     /**

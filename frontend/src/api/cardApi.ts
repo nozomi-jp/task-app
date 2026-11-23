@@ -1,7 +1,7 @@
 // カードについての API（要件定義書 10章）
-// 検索は GET、登録は POST、更新は PATCH（中身の一部を変える）・PUT（位置を置き換える）
+// 検索は GET、登録は POST、更新は PATCH（中身の一部を変える）・PUT（位置を置き換える）、削除は DELETE
 import type { Card, CardUpdate, NewCard } from '../types.ts'
-import { requestJson } from './client.ts'
+import { requestJson, requestNoContent } from './client.ts'
 
 /**
  * API-05：カードをリストの一番下に追加する（登録なので POST）。
@@ -22,6 +22,11 @@ export function updateCard(cardId: number, update: CardUpdate): Promise<Card> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(update),
   })
+}
+
+/** API-07：カードを削除する（DELETE）。データベースから行ごとなくなる。成功すると 204 で、返事の中身はない */
+export function deleteCard(cardId: number): Promise<void> {
+  return requestNoContent(`/api/cards/${cardId}`, { method: 'DELETE' })
 }
 
 /**

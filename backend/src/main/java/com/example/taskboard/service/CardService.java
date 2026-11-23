@@ -88,6 +88,21 @@ public class CardService {
         return CardResponse.from(card);
     }
 
+    /**
+     * カードを削除する（F-07、API-07）。物理削除なので、データベースから行ごとなくなり、元に戻せない。
+     * 残ったカードの並び順にすき間ができないよう、0 から振り直す。まとめて1つのトランザクションで行う。
+     *
+     * @throws NotFoundException カードがないとき
+     */
+    @Transactional
+    public void deleteCard(Long cardId) {
+        Card card = findCard(cardId);
+        cardRepository.delete(card);
+        renumber(cardRepository.findByListIdOrderByPositionAsc(card.getListId()).stream()
+                .filter(c -> !c.getId().equals(cardId))
+                .toList());
+    }
+
     /** 並んでいる順に、並び順を 0, 1, 2, … と振り直す */
     private static void renumber(List<Card> cards) {
         for (int i = 0; i < cards.size(); i++) {

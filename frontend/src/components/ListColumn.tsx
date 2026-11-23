@@ -14,10 +14,12 @@ export default function ListColumn({
   list,
   onAddCard,
   onOpenCard,
+  onDeleteCard,
 }: {
   list: TaskList
   onAddCard: (listId: number, newCard: NewCard) => Promise<boolean>
   onOpenCard: (card: CardData, listId: number) => void
+  onDeleteCard: (cardId: number) => void
 }) {
   const [adding, setAdding] = useState(false) // カードを追加するダイアログを開いているか
   const { setNodeRef, isOver } = useDroppable({ id: listDragId(list.id) })
@@ -30,7 +32,12 @@ export default function ListColumn({
       <SortableContext items={list.cards.map((card) => cardDragId(card.id))} strategy={verticalListSortingStrategy}>
         <div className="cards">
           {list.cards.map((card) => (
-            <Card key={card.id} card={card} onOpen={() => onOpenCard(card, list.id)} />
+            <Card
+              key={card.id}
+              card={card}
+              onOpen={() => onOpenCard(card, list.id)}
+              onDelete={() => onDeleteCard(card.id)}
+            />
           ))}
         </div>
       </SortableContext>
