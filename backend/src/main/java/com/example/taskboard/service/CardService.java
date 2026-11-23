@@ -1,15 +1,19 @@
 package com.example.taskboard.service;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.taskboard.dto.BoardResponse.CardResponse;
+import com.example.taskboard.dto.BoardResponse.ListResponse;
 import com.example.taskboard.dto.CreateCardRequest;
 import com.example.taskboard.dto.UpdateCardRequest;
 import com.example.taskboard.entity.Card;
+import com.example.taskboard.entity.TaskList;
 import com.example.taskboard.repository.CardRepository;
 import com.example.taskboard.repository.TaskListRepository;
 
@@ -18,6 +22,9 @@ import com.example.taskboard.repository.TaskListRepository;
  */
 @Service
 public class CardService {
+
+    /** 優先度の順位（小さいほど高い） */
+    private static final Map<String, Integer> PRIORITY_RANK = Map.of("high", 0, "medium", 1, "low", 2);
 
     private final TaskListRepository taskListRepository;
     private final CardRepository cardRepository;
@@ -101,6 +108,38 @@ public class CardService {
         renumber(cardRepository.findByListIdOrderByPositionAsc(card.getListId()).stream()
                 .filter(c -> !c.getId().equals(cardId))
                 .toList());
+    }
+
+    /**
+     * リストの中のカードを、期限順または優先度順に並べ替えて、並び順を振り直す（F-13、API-09）。
+     * 同じ順位のカードは今の順番のまま。期限・優先度がないカードは、どちらの向きでも一番下。
+     *
+     * @param by      dueDate（期限）か priority（優先度）
+     * @param reverse false なら期限が近い順・優先度が高い順、true ならその反対
+     * @throws NotFoundException リストがないとき
+     */
+    @Transactional
+    public ListResponse sortCards(Long listId, String by, boolean reverse) {
+        TaskList list = taskListRepository.findById(listId)
+                .orElseThrow(() -> new NotFoundException("リストが見つかりません（ID " + listId + "）"));
+        Comparator<Card> order = switch (by) {
+            case "dueDate" -> Comparator.comparing(Card::getDueDate, noneLast(reverse));
+            case "priority" -> Comparator.comparing(CardService::priorityRank, noneLast(reverse));
+            default -> throw new IllegalArgumentException("並べ替えの種類が正しくありません：" + by);
+        };
+        List<Card> sorted = cardRepository.findByListIdOrderByPositionAsc(listId).stream().sorted(order).toList();
+        renumber(sorted);
+        return new ListResponse(list.getId(), list.getTitle(), sorted.stream().map(CardResponse::from).toList());
+    }
+
+    /** 「なし」（null）はいつも最後。それ以外を小さい順（reverse なら大きい順）に並べる比べ方 */
+    private static <T extends Comparable<? super T>> Comparator<T> noneLast(boolean reverse) {
+        return Comparator.nullsLast(reverse ? Comparator.<T>reverseOrder() : Comparator.<T>naturalOrder());
+    }
+
+    /** 優先度の順位。優先度がなければ null */
+    private static Integer priorityRank(Card card) {
+        return card.getPriority() == null ? null : PRIORITY_RANK.get(card.getPriority());
     }
 
     /** 並んでいる順に、並び順を 0, 1, 2, … と振り直す */

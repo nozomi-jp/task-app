@@ -12,8 +12,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.taskboard.dto.BoardResponse.CardResponse;
+import com.example.taskboard.dto.BoardResponse.ListResponse;
 import com.example.taskboard.dto.CreateCardRequest;
 import com.example.taskboard.dto.MoveCardRequest;
+import com.example.taskboard.dto.SortCardsRequest;
 import com.example.taskboard.dto.UpdateCardRequest;
 import com.example.taskboard.service.CardService;
 
@@ -71,5 +73,14 @@ public class CardController {
     @PutMapping("/cards/{cardId}/position")
     public CardResponse moveCard(@PathVariable Long cardId, @Valid @RequestBody MoveCardRequest request) {
         return cardService.moveCard(cardId, request.listId(), request.position());
+    }
+
+    /**
+     * API-09：リストの中のカードを、期限順または優先度順に並べ替える。
+     * 成功したら 200 と、並べ替えたあとのリスト（カードを並び順どおりに含む）を返す。
+     */
+    @PostMapping("/lists/{listId}/sort")
+    public ListResponse sortCards(@PathVariable Long listId, @Valid @RequestBody SortCardsRequest request) {
+        return cardService.sortCards(listId, request.by(), Boolean.TRUE.equals(request.reverse()));
     }
 }

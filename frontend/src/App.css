@@ -65,6 +65,27 @@
   word-break: break-all;
 }
 
+/* ===== 並べ替えのボタン（F-13・SC-01-f） ===== */
+.sort {
+  display: flex;
+  flex-shrink: 0;
+  align-self: flex-start;
+  gap: 2px;
+}
+
+.sort-btn {
+  padding: 3px 6px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: var(--text-sub);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.sort-btn:hover { background: #dcdfe4; }
+.sort-btn.current { color: var(--accent); font-weight: bold; }
+
 .cards {
   display: flex;
   flex-direction: column;

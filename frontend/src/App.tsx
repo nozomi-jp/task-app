@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { fetchBoard } from './api/boardApi.ts'
 import { createCard, deleteCard, moveCard, updateCard } from './api/cardApi.ts'
+import { sortCards } from './api/listApi.ts'
 import Board from './components/Board.tsx'
 import CardDialog from './components/CardDialog.tsx'
 import { boardReducer } from './state/boardReducer.ts'
-import type { Card, CardFormValues, NewCard } from './types.ts'
+import type { Card, CardFormValues, NewCard, SortKey } from './types.ts'
 import './App.css'
 
 /** 1枚消してから、次の「×」を受け付けるまでの時間（ミリ秒） */
@@ -122,6 +123,19 @@ export default function App() {
     [handleSaveError],
   )
 
+  /** リストの中のカードを並べ替える（F-13、API-09）。失敗したら右上に赤い字で理由を出し、読み込み直す */
+  const handleSortCards = useCallback(
+    async (listId: number, by: SortKey, reverse: boolean) => {
+      try {
+        dispatch({ type: 'listSorted', list: await sortCards(listId, by, reverse) })
+        setErrorMessage(null)
+      } catch (error) {
+        handleSaveError(error)
+      }
+    },
+    [handleSaveError],
+  )
+
   /**
    * ドラッグ＆ドロップで置いた場所を保存する（F-08・F-09、API-08）。
    * 画面ではもう動かしてあるので、保存できたらそのまま。失敗したら赤い字で理由を出し、読み込み直して元の状態に戻す。
@@ -158,6 +172,7 @@ export default function App() {
           onAddCard={handleAddCard}
           onOpenCard={(card, listId) => setOpenCard({ card, listId })}
           onDeleteCard={handleDeleteCard}
+          onSortCards={handleSortCards}
           onPreviewMove={(cardId, toListId, toIndex) => dispatch({ type: 'cardMoved', cardId, toListId, toIndex })}
           onRestore={(before) => dispatch({ type: 'loaded', board: before })}
           onCommitMove={handleCommitMove}
