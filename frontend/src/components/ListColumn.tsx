@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useDroppable } from '@dnd-kit/core'
+import { useDndContext, useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { cardDragId, listDragId } from '../dnd.ts'
 import type { Card as CardData, NewCard, TaskList } from '../types.ts'
@@ -22,7 +22,11 @@ export default function ListColumn({
   onDeleteCard: (cardId: number) => void
 }) {
   const [adding, setAdding] = useState(false) // カードを追加するダイアログを開いているか
-  const { setNodeRef, isOver } = useDroppable({ id: listDragId(list.id) })
+  const { setNodeRef } = useDroppable({ id: listDragId(list.id) })
+  // カードを持って、このリスト（またはその中のカード）の上に来ているか
+  const { over } = useDndContext()
+  const isOver =
+    over !== null && (over.id === listDragId(list.id) || list.cards.some((card) => cardDragId(card.id) === over.id))
 
   return (
     <section ref={setNodeRef} className={isOver ? 'list drop-target' : 'list'}>
