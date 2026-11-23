@@ -63,10 +63,10 @@
 
 | 順番 | やること | 内容 |
 | --- | --- | --- |
-| 1 | ソフトを入れる | JDK 25（Eclipse Temurin）、Node.js（LTS版）、Docker Desktop。版はQ-05で決める。データベースの中身を見るときは pgAdmin も使う（13.3） |
+| 1 | ソフトを入れる | JDK 25（Eclipse Temurin）、Node.js（LTS版）、Docker Desktop。版は13.4。データベースの中身を見るときは pgAdmin も使う（13.3） |
 | 2 | パスワードを決める | データベースの `taskboard` ユーザーのパスワードを自分で決め、Windows のユーザー環境変数 `TASKBOARD_DB_PASSWORD` に入れる。`compose.yaml` と `application.properties` には `${TASKBOARD_DB_PASSWORD}` とだけ書き、パスワードそのものは書かない（NFR-26）。設定したら VS Code を開き直す |
 | 3 | データベースを作る | リポジトリのフォルダで `docker compose up -d`。初回は PostgreSQL のイメージをダウンロードし、ユーザー `taskboard` とデータベース `taskboard` を自動で作る |
-| 4 | 画面をビルドする | `frontend` フォルダで `npm install`、`npm run build`。できたファイルは `backend/src/main/resources/static/` に入る（Gitには入れない） |
+| 4 | 画面をビルドする | `frontend` フォルダで `npm install`、`npm run build`。できたファイルは `backend/src/main/resources/static/` に入る（Gitには入れない）。**まだ設定していない**：今は `frontend/dist/` にできるので、`http://localhost:8080` では画面が開かない（ステップ9で設定する。それまでは 12.6 の方法で使う） |
 
 テーブルは、サーバーを最初に起動したときに Flyway が自動で作ります（9.3）。
 
@@ -142,7 +142,7 @@ v2.0で、発注者から次の指定がありました。
 | ドラッグ&ドロップ | dnd-kit ／ @hello-pangea/dnd ／ SortableJS（react-sortablejs） | dnd-kit | ①React向けで広く使われ、リストをまたぐ移動と並べ替え（F-08・F-09）の例が多い。ライセンスはMIT。SortableJS は画面を直接書き換えるため、Reactと組み合わせると食い違いが起きやすい |
 | データの持ち方 | React標準（useState・useReducer） ／ Redux ／ Zustand | React標準 | ③画面が1つで、データもボード1枚だけなので、追加のライブラリはいらない。useReducer で「データを変える処理」をまとめる（NFR-12） |
 | APIの呼び出し | fetch ／ axios ／ TanStack Query | fetch | ②ブラウザ標準で、何も入れなくてよい。呼び出しは `api` フォルダにまとめる |
-| 見た目 | 素のCSS（CSS Modules） ／ Tailwind CSS ／ MUI | CSS Modules | ①Vite で設定なしに使える。②画面プロトタイプ（`prototype/style.css`）をほぼそのまま使える。部品ごとにCSSを分けられ、名前がぶつからない |
+| 見た目 | 素のCSS ／ CSS Modules ／ Tailwind CSS ／ MUI | 素のCSS | ①Vite で設定なしに使える。②画面プロトタイプ（`prototype/style.css`）をほぼそのまま使える。画面が1つで部品も少なく、名前がぶつかっていないので、1つの `App.css` にまとめている（v2.19 で CSS Modules から変更。実装に合わせた。部品が増えて名前がぶつかるようになったら、分けることを考える） |
 | 実行環境 | Node.js（LTS版） | Node.js（LTS版） | Vite・npm を動かすのに必要。ビルドしたあと、ふだん使うときは不要 |
 
 ### 13.2 バックエンド
@@ -236,9 +236,14 @@ v2.0で、発注者から次の指定がありました。
 │   ├── index.html
 │   └── src/
 │       ├── main.tsx             入口
+│       ├── index.css            全体の見た目（色・文字）
+│       ├── App.css              ボード画面の見た目
 │       ├── types.ts             APIでやりとりするデータの形（型）
 │       ├── App.tsx              ボード画面全体
-│       ├── components/          画面の部品（Board・ListColumn・Card・CardDialog など）
+│       ├── format.ts            期限・優先度の表示のしかた
+│       ├── sort.ts              今どの順に並んでいるかを調べる（F-13）
+│       ├── dnd.ts               ドラッグ&ドロップで置く場所を決める（F-08・F-09）
+│       ├── components/          画面の部品（Board・ListColumn・Card・CardDialog・SortButtons）
 │       ├── state/               データを変える処理（useReducer）
 │       └── api/                 APIを呼ぶ処理
 └── backend/                     バックエンド（Spring Boot）
@@ -260,7 +265,7 @@ v2.0で、発注者から次の指定がありました。
             └── static/                  ビルドした画面（Gitに入れない）
 ```
 
-`.gitignore` には、`frontend/node_modules/`・`frontend/dist/`・`backend/target/`・`backend/src/main/resources/static/` と、バックアップのファイル（`*.dump`）を入れます。
+Git に入れないものは、3つの `.gitignore` に書いています。リポジトリ直下：バックアップのファイル（`*.dump`）。`frontend`：`node_modules/`・`dist/`。`backend`：`target/`・`src/main/resources/static/`。
 
 ---
 
