@@ -2,6 +2,7 @@ package com.example.taskboard.dto;
 
 import java.time.LocalDate;
 
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -10,6 +11,7 @@ import jakarta.validation.constraints.Size;
  * API-05 POST /api/lists/{id}/cards で送られてくるデータの形。
  * 例：{"text": "買い物", "description": "牛乳と卵", "priority": "medium", "dueDate": "2026-11-25"}
  * text 以外は省略してよい（null）。
+ * position は、リストの上から何番目に入れるか（0始まり）。省略すると一番下。消したカードを元の場所に戻すときに使う（F-14）。
  * 入力のルール（要件定義書 6.1）は画面でもチェックするが、API を直接呼ばれても守れるように、ここでもチェックする（NFR-22）。
  * dueDate に存在しない日付（2026-02-30 など）が来たときは、JSON を読む段階で 400 になる。
  */
@@ -25,5 +27,8 @@ public record CreateCardRequest(
         @Pattern(regexp = "high|medium|low", message = "優先度は high・medium・low のどれかにしてください")
         String priority,
 
-        LocalDate dueDate) {
+        LocalDate dueDate,
+
+        @Min(value = 0, message = "カードの位置は0以上にしてください")
+        Integer position) {
 }

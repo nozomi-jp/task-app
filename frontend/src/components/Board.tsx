@@ -32,6 +32,7 @@ export default function Board({
   onPreviewMove,
   onRestore,
   onCommitMove,
+  onDraggingChange,
 }: {
   board: BoardData
   onAddCard: (listId: number, newCard: NewCard) => Promise<SaveResult>
@@ -46,6 +47,8 @@ export default function Board({
   onRestore: (board: BoardData) => void
   /** 置いた場所を保存する（API-08） */
   onCommitMove: (cardId: number, listId: number, position: number) => void
+  /** カードをつかんだ（true）・離した（false） */
+  onDraggingChange: (dragging: boolean) => void
 }) {
   const [draggingCard, setDraggingCard] = useState<Card | null>(null)
   const beforeDrag = useRef<BoardData | null>(null) // つかむ前のボード（やめたときに戻すため）
@@ -74,6 +77,7 @@ export default function Board({
   function handleDragStart(event: DragStartEvent) {
     const active = parseDragId(event.active.id)
     beforeDrag.current = board
+    onDraggingChange(true)
     setDraggingCard(board.lists.flatMap((l) => l.cards).find((c) => c.id === active?.id) ?? null)
   }
 
@@ -91,6 +95,7 @@ export default function Board({
     const active = parseDragId(event.active.id)
     const before = beforeDrag.current
     setDraggingCard(null)
+    onDraggingChange(false)
     beforeDrag.current = null
     if (active === null || before === null) return
 
@@ -122,6 +127,7 @@ export default function Board({
     if (beforeDrag.current !== null) onRestore(beforeDrag.current)
     beforeDrag.current = null
     setDraggingCard(null)
+    onDraggingChange(false)
   }
 
   return (

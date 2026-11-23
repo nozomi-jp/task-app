@@ -36,14 +36,17 @@ public class CardService {
 
     /**
      * カードをリストの一番下に追加する（F-05、API-05）。
-     * 「一番下の位置を調べる」と「保存する」を1つのトランザクションで行う。
+     * 位置（position）が送られてきたときは、その場所を空けてから入れる（消したカードを元に戻すとき、F-14）。
+     * 「位置を決める（空ける）」と「保存する」を1つのトランザクションで行う。
      *
      * @throws NotFoundException リストがないとき
      */
     @Transactional
     public CardResponse createCard(Long listId, CreateCardRequest request) {
         requireListExists(listId);
-        int position = cardRepository.findMaxPositionByListId(listId) + 1;
+        int position = request.position() == null
+                ? cardRepository.findMaxPositionByListId(listId) + 1
+                : makeRoom(listId, request.position());
         Card card = new Card(listId, request.text(), blankToNull(request.description()), request.dueDate(),
                 request.priority(), position);
         return CardResponse.from(cardRepository.save(card));
@@ -83,6 +86,21 @@ public class CardService {
         return CardResponse.from(card);
     }
 
+    /**
+     * リストの指定した位置に、カード1枚分の場所を空ける（その位置から下のカードの並び順を1つずつ下げる）。
+     * 呼ぶ側のトランザクションの中で行う。
+     *
+     * @return 空けた位置。カードの数より大きい位置を指定されたときは、一番下
+     */
+    private int makeRoom(Long listId, int position) {
+        List<Card> cards = cardRepository.findByListIdOrderByPositionAsc(listId);
+        int index = Math.min(position, cards.size());
+        for (int i = 0; i < cards.size(); i++) {
+            cards.get(i).setPosition(i < index ? i : i + 1);
+        }
+        return index;
+    }
+
     /** カードを、指定したリストの指定した位置へ移し、並び順を振り直す。呼ぶ側のトランザクションの中で行う */
     private void place(Card card, Long targetListId, int position) {
         requireListExists(targetListId);
@@ -107,7 +125,8 @@ public class CardService {
     }
 
     /**
-     * カードを削除する（F-07、API-07）。物理削除なので、データベースから行ごとなくなり、元に戻せない。
+     * カードを削除する（F-07、API-07）。物理削除なので、データベースから行ごとなくなる。
+     * 画面の「元に戻す」（F-14）は、同じ中身のカードを新しく作る（API-05）。
      * 残ったカードの並び順にすき間ができないよう、0 から振り直す。まとめて1つのトランザクションで行う。
      *
      * @throws NotFoundException カードがないとき

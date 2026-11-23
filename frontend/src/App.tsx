@@ -4,12 +4,21 @@ import { createCard, deleteCard, moveCard, updateCard } from './api/cardApi.ts'
 import { sortCards } from './api/listApi.ts'
 import Board from './components/Board.tsx'
 import CardDialog from './components/CardDialog.tsx'
-import { boardReducer } from './state/boardReducer.ts'
-import type { Card, CardFormValues, NewCard, SaveResult, SortKey } from './types.ts'
+import UndoToast from './components/UndoToast.tsx'
+import { boardReducer, findCardPlace } from './state/boardReducer.ts'
+import type { Card, CardFormValues, DeletedCard, NewCard, SaveResult, SortKey } from './types.ts'
 import './App.css'
 
 /** 1枚消してから、次の「×」を受け付けるまでの時間（ミリ秒） */
 const DELETE_GUARD_MS = 500
+
+/** 消した直後の「元に戻す」の知らせを出しておく時間（ミリ秒） */
+const UNDO_TOAST_MS = 8000
+
+/** 文字を入力しているところか（そこでの Ctrl + Z は、文字を戻す操作のままにする） */
+function isTextField(target: EventTarget | null): boolean {
+  return target instanceof HTMLElement && (target.isContentEditable || target.matches('input, textarea, select'))
+}
 
 /** エラーの理由を取り出す */
 function reasonOf(error: unknown): string {
@@ -21,6 +30,9 @@ export default function App() {
   const [board, dispatch] = useReducer(boardReducer, null) // 読み込んだボード。読み込み前は null
   const [errorMessage, setErrorMessage] = useState<string | null>(null) // 右上に赤い字で出すメッセージ
   const [openCard, setOpenCard] = useState<{ card: Card; listId: number } | null>(null) // 詳細画面で開いているカード
+  const [undoToast, setUndoToast] = useState<DeletedCard | null>(null) // 「元に戻す」の知らせを出しているカード
+  const deletedCards = useRef<DeletedCard[]>([]) // 消したカード（最後が、いちばん新しく消したもの）。読み込み直すと空になる
+  const dragging = useRef(false) // カードをつかんでいる間か
 
   // 画面を開いたときに1回だけ読み込む
   useEffect(() => {
@@ -101,7 +113,8 @@ export default function App() {
    * カードを削除する（F-07、API-07）。確認なし。データベースから消せたら、画面からも消す。
    * 失敗したら右上に赤い字で理由を出し、読み込み直す。
    * 消すと下のカードが詰まって上がってくるので、「×」をうっかりダブルクリックすると次のカードまで消えてしまう。
-   * 元に戻せない操作なので、続けて押された「×」は無視する。
+   * 続けて押された「×」は無視する。
+   * 消したカードは、元に戻せるように、中身と場所を覚えておく（F-14）。
    */
   const lastDeleteAt = useRef(0)
   const handleDeleteCard = useCallback(
@@ -109,16 +122,66 @@ export default function App() {
       const now = Date.now()
       if (now - lastDeleteAt.current < DELETE_GUARD_MS) return
       lastDeleteAt.current = now
+      const card = board?.lists.flatMap((list) => list.cards).find((c) => c.id === cardId)
+      const place = board && findCardPlace(board, cardId)
       try {
         await deleteCard(cardId)
         dispatch({ type: 'cardDeleted', cardId })
         setErrorMessage(null)
+        if (card && place) {
+          const deleted = { card, ...place }
+          deletedCards.current.push(deleted)
+          setUndoToast(deleted)
+        }
       } catch (error) {
         handleSaveError(error)
       }
     },
-    [handleSaveError],
+    [board, handleSaveError],
   )
+
+  /**
+   * いちばん新しく消したカードを、元のリストの元の場所に戻す（F-14、API-05）。
+   * データベースからは消えているので、同じ中身のカードを作り直す（id は新しくなる）。
+   * 戻している途中・カードをつかんでいる間は、何もしない。失敗したときは覚えたままなので、もう一度試せる。
+   */
+  const undoing = useRef(false)
+  const handleUndoDelete = useCallback(async () => {
+    const last = deletedCards.current.at(-1)
+    if (last === undefined || undoing.current || dragging.current) return
+    undoing.current = true
+    try {
+      const card = await createCard(last.listId, last.card, last.index)
+      dispatch({ type: 'cardAdded', listId: last.listId, card, index: last.index })
+      deletedCards.current = deletedCards.current.filter((deleted) => deleted !== last)
+      setUndoToast(null)
+      setErrorMessage(null)
+    } catch (error) {
+      handleSaveError(error)
+    } finally {
+      undoing.current = false
+    }
+  }, [handleSaveError])
+
+  // 「元に戻す」の知らせは、時間がたったら消す（消したカードは覚えたままなので、Ctrl + Z では戻せる）
+  useEffect(() => {
+    if (undoToast === null) return
+    const timer = setTimeout(() => setUndoToast(null), UNDO_TOAST_MS)
+    return () => clearTimeout(timer)
+  }, [undoToast])
+
+  // Ctrl + Z で、消したカードを戻す。入力欄・ダイアログの中では、ブラウザの「文字を戻す」のままにする
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (!e.ctrlKey || e.shiftKey || e.altKey || e.key.toLowerCase() !== 'z') return
+      if (e.repeat || isTextField(e.target) || document.querySelector('dialog[open]') !== null) return
+      if (deletedCards.current.length === 0) return
+      e.preventDefault()
+      void handleUndoDelete()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [handleUndoDelete])
 
   /** リストの中のカードを並べ替える（F-13、API-09）。失敗したら右上に赤い字で理由を出し、読み込み直す */
   const handleSortCards = useCallback(
@@ -173,6 +236,9 @@ export default function App() {
           onPreviewMove={(cardId, toListId, toIndex) => dispatch({ type: 'cardMoved', cardId, toListId, toIndex })}
           onRestore={(before) => dispatch({ type: 'loaded', board: before })}
           onCommitMove={handleCommitMove}
+          onDraggingChange={(value) => {
+            dragging.current = value
+          }}
         />
       )}
       {openCard && board && (
@@ -187,6 +253,7 @@ export default function App() {
           onClose={() => setOpenCard(null)}
         />
       )}
+      {undoToast && <UndoToast cardText={undoToast.card.text} onUndo={() => void handleUndoDelete()} />}
     </>
   )
 }

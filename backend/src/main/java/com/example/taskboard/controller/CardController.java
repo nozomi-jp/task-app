@@ -36,9 +36,9 @@ public class CardController {
     }
 
     /**
-     * API-05：カードをリストの一番下に追加する。
+     * API-05：カードをリストの一番下（position を送れば、その場所）に追加する。
      * 登録（新しく作る）なので POST を使い、成功したら 201（Created：作成した）と、追加したカードを返す。
-     * {@code @Valid} で CreateCardRequest のチェック（タイトルの空欄・200文字・改行、説明の1000文字、優先度の値）を行い、
+     * {@code @Valid} で CreateCardRequest のチェック（タイトルの空欄・200文字・改行、説明の1000文字、優先度の値、位置）を行い、
      * 違反していれば 400 になる。
      */
     @PostMapping("/lists/{listId}/cards")
