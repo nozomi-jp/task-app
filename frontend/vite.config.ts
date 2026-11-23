@@ -4,6 +4,13 @@ import { defineConfig } from 'vite'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  build: {
+    // ビルドした画面は Spring Boot が配る（http://localhost:8080、要件定義書 8.1）。Git には入れない。
+    outDir: '../backend/src/main/resources/static',
+    // 出力先が frontend の外にあるので、true と書かないと古い完成品が残る。
+    // ビルドのたびに、このフォルダの中身はすべて入れ替わる（手で作ったファイルを置かないこと）。
+    emptyOutDir: true,
+  },
   server: {
     // 画面の開発サーバーは必ず 5173 番で動かす（CLAUDE.md「サーバーの起動とポート」）。
     // strictPort: true にすると、5173 がふさがっているときに 5174 などへ逃げず、エラーで止まる。

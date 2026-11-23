@@ -66,7 +66,7 @@
 | 1 | ソフトを入れる | JDK 25（Eclipse Temurin）、Node.js（LTS版）、Docker Desktop。版は13.4。データベースの中身を見るときは pgAdmin も使う（13.3） |
 | 2 | パスワードを決める | データベースの `taskboard` ユーザーのパスワードを自分で決め、Windows のユーザー環境変数 `TASKBOARD_DB_PASSWORD` に入れる。`compose.yaml` と `application.properties` には `${TASKBOARD_DB_PASSWORD}` とだけ書き、パスワードそのものは書かない（NFR-26）。設定したら VS Code を開き直す |
 | 3 | データベースを作る | リポジトリのフォルダで `docker compose up -d`。初回は PostgreSQL のイメージをダウンロードし、ユーザー `taskboard` とデータベース `taskboard` を自動で作る |
-| 4 | 画面をビルドする | `frontend` フォルダで `npm install`、`npm run build`。できたファイルは `backend/src/main/resources/static/` に入る（Gitには入れない）。**まだ設定していない**：今は `frontend/dist/` にできるので、`http://localhost:8080` では画面が開かない（ステップ9で設定する。それまでは 12.6 の方法で使う） |
+| 4 | 画面をビルドする | `frontend` フォルダで `npm.cmd install`、`npm.cmd run build`。できたファイルは `backend/src/main/resources/static/` に入る（Gitには入れない）。ビルドのたびに、このフォルダの中身はすべて入れ替わるので、手で作ったファイルを置かない |
 
 テーブルは、サーバーを最初に起動したときに Flyway が自動で作ります（9.3）。
 
@@ -80,7 +80,7 @@
 
 Docker Desktop は、Windows にサインインすると自動で起動するように設定しておきます（Docker Desktop の Settings → General → 「Start Docker Desktop when you sign in to your computer」）。
 
-画面のプログラムを変えたときは、起動の前に 12.1 の4（ビルド）をやり直します。
+画面のプログラムを変えたときは、`frontend` フォルダで `npm.cmd run build` をやり直し、サーバーを起動し直します。サーバーは起動するときに画面のファイルを読み込むので、動かしたままビルドしても新しくなりません。
 
 ### 12.3 停止
 
@@ -108,7 +108,7 @@ Docker Desktop は、Windows にサインインすると自動で起動するよ
 | 起動時に「Connection refused」など、データベースにつながらないエラー | Docker Desktop が起動しているか。`docker compose ps` で `db` が `healthy` か | Docker Desktop を起動する。`db` がなければ `docker compose up -d` |
 | `docker compose up -d` で「port is already allocated」 | 5432番をほかのアプリが使っていないか（Windows 版 PostgreSQL のサービス `postgresql-x64-18` が動いていないか） | そのアプリ・サービスを止める |
 | 起動時に「password authentication failed」 | 環境変数 `TASKBOARD_DB_PASSWORD` が正しいか | 設定し直し、VS Code を開き直す。データベースを最初に作ったあとにパスワードを変えた場合は、データベース側のパスワードは変わらないので注意 |
-| 画面が真っ白、または古い画面のまま | 画面をビルドしたか | 12.1 の4をやり直す |
+| `http://localhost:8080` が「Not Found」・真っ白・古い画面のまま | 画面をビルドしたか。ビルドのあとにサーバーを起動し直したか | 12.1 の4（ビルド）をやり直し、サーバーを起動し直す |
 | データがおかしい・消えた | pgAdmin で `lists`・`cards` テーブルの中身を見る | バックアップから戻す（12.4） |
 
 ### 12.6 開発中の起動
