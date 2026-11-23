@@ -121,6 +121,19 @@ Docker Desktop は、Windows にサインインすると自動で起動するよ
 
 ポートは必ず、バックエンド **8080**、画面 **5173** を使う。ふさがっているときは、使っているプロセスを止めてから同じポートで起動する（12.5）。別のポートで一時的に起動するのも禁止（発注者の指示、v2.5）。画面の開発サーバーは `strictPort` の設定で、5173 がふさがっていると別のポートへ逃げずにエラーで止まる。
 
+### 12.7 自動テスト
+
+変更したあとに、壊れたところがないかをコマンド1つで確かめる（v2.30 で追加）。サーバーは起動しないので、8080・5173 は使わない。
+
+| 部分 | フォルダ | コマンド | 確かめること |
+| --- | --- | --- | --- |
+| バックエンド（JUnit） | `backend` | `.\mvnw.cmd test` | API-01〜09：成功したときの返事と並び順、おかしなデータを断ること（40個） |
+| 画面（Vitest） | `frontend` | `npm.cmd run test` | 検索・ラベルの絞り込み、並びの判定、期限の表示、ボードのデータを変える処理（30個） |
+
+- バックエンドのテストは、**テスト専用のデータベース `taskboard_test`** を使う。カードとリストを消してから始めるので、ふだんの `taskboard` では動かないようにしている（つなぐ先を固定し、違うデータベースなら始めずに止める）
+- `taskboard_test` は、最初に1回だけ作る。リポジトリのフォルダで `docker compose exec db createdb -U taskboard taskboard_test`。テーブルは、テストを動かすと Flyway が自動で作る
+- ドラッグ・キーボード・ダイアログなどの画面の操作は、自動テストに入れていない（受入テストで試す）
+
 ## 13. 技術選定
 
 v2.0で、発注者から次の指定がありました。
@@ -166,7 +179,7 @@ v2.0で、発注者から次の指定がありました。
 | データベース | PostgreSQL | **PostgreSQL**（指定） | 発注者の指定 |
 | PostgreSQL の動かし方 | Windows版インストーラー ／ Docker（Docker Compose） | Docker | 発注者の指示（v2.1で変更）。①講座・現場で一般的。②設定が `compose.yaml` 1つにまとまり、Gitで管理できる。作り直しもコマンド1つでできる。v2.0では Windows 版を選んで入れたが、サービスは止めて自動で動かない設定にした（pgAdmin を使うため、アンインストールはしない） |
 | データベースの中身を見るツール | pgAdmin ／ psql ／ VS Code の拡張機能 | pgAdmin | ②Windows 版 PostgreSQL と一緒にすでに入っている。`localhost:5432` の `taskboard` に接続すると、Docker のデータベースの中身を画面で見られる（AT-35など） |
-| テスト | 手動（受入テスト表） ／ 自動テスト | 手動 | 機能が少なく、画面操作が中心のため。自動テスト（JUnit・Vitest）は今後の学習課題（19章） |
+| テスト | 手動（受入テスト表） ／ 自動テスト | 両方 | 画面の操作は受入テスト（15章）で試す。API とデータの処理は自動テスト（12.7）で試す（v2.30 で「手動だけ」から変更）。バックエンドは JUnit・MockMvc（Spring Boot に入っている）、画面は Vitest（Vite と同じ設定で動く） |
 | 書き方・バグの自動チェック | 画面：oxlint ／ ESLint。バックエンド：Checkstyle・SpotBugs ／ PMD ／ なし | 画面は oxlint、バックエンドは Checkstyle（書き方）と SpotBugs（バグになりやすい書き方） | 講座の先生の指示（v2.15）。oxlint は Vite のひな型に入っている。Checkstyle と SpotBugs は Java で広く使われ、役割が違うので両方使う。最初はゆるめの設定にする。動かし方：画面は `frontend` で `npm.cmd run lint`、バックエンドは `backend` で `.\mvnw.cmd compile checkstyle:check spotbugs:check` |
 | バージョン管理 | Git ／ なし | Git ＋ GitHub（イシュー・ブランチ・プルリクエスト） | 変更の記録と、壊したときに戻すため。v2.2で、イシューとブランチで作業を分け、main はプルリクエストからしか変えられないようにした（GitHub のルールセットで main を保護、Claude Code のフックで main への commit・push を止める） |
 | エディタ | VS Code | VS Code | 学習中のエディタ。Java の拡張機能（Extension Pack for Java・Spring Boot Extension Pack）を入れる |
@@ -214,6 +227,7 @@ v2.0で、発注者から次の指定がありました。
 | @types/react・@types/react-dom（React の型の説明書） | 19.3.0 | 2026-11-21 |
 | @types/node（Node.js の型の説明書） | 26.6.6（Node.js 26 に合わせた。ひな型の指定は 24 系） | 2026-11-21 |
 | oxlint（書き方のチェック） | 1.94.0（Vite のひな型が ESLint の代わりに入れるもの） | 2026-11-21 |
+| Vitest（画面の自動テスト） | 5.1.1 | 2026-11-23 |
 | Checkstyle（Java の書き方のチェック） | 14.4.0（maven-checkstyle-plugin 3.6.0） | 2026-11-23 |
 | SpotBugs（Java のバグのチェック） | 4.10.5（spotbugs-maven-plugin 4.10.5.0） | 2026-11-23 |
 | dnd-kit（ドラッグ&ドロップ） | @dnd-kit/core 6.3.1、@dnd-kit/sortable 10.0.0、@dnd-kit/utilities 3.2.2（安定版の最新。0.x の試験版 @dnd-kit/react は使わない） | 2026-11-22 |
@@ -233,6 +247,7 @@ v2.0で、発注者から次の指定がありました。
 │   ├── vite.config.ts           開発中に /api をバックエンドへ中継する設定、ポート（5173）、ビルド先の設定
 │   ├── tsconfig*.json           TypeScript の型チェックの設定（3つ。Vite のひな型のまま）
 │   ├── .oxlintrc.json           書き方のチェック（oxlint）の設定
+│   ├── scripts/test.mjs         自動テスト（Vitest）を動かす。テストは src の中の *.test.ts
 │   ├── index.html
 │   └── src/
 │       ├── main.tsx             入口
@@ -253,6 +268,7 @@ v2.0で、発注者から次の指定がありました。
     ├── checkstyle.xml           書き方のチェック（Checkstyle）の設定
     ├── spotbugs-exclude.xml     バグのチェック（SpotBugs）で例外にするものと、その理由
     ├── db/test-data.sql         動作確認用のテストデータ（手で入れる。Flyway では入れない。入れ方はファイルの先頭）
+    ├── src/test/                自動テスト（JUnit）
     └── src/main/
         ├── java/…/taskboard/
         │   ├── controller/      受付：URLとメソッドごとの入口（API-01〜09）
