@@ -12,6 +12,7 @@ import {
 } from '@dnd-kit/core'
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { detectDropTarget, parseDragId } from '../dnd.ts'
+import type { SearchFilter } from '../search.ts'
 import { findCardPlace, moveCardInBoard } from '../state/boardReducer.ts'
 import type { Board as BoardData, Card, NewCard, SaveResult, SortKey } from '../types.ts'
 import { CardOverlay } from './Card.tsx'
@@ -25,7 +26,7 @@ import ListColumn from './ListColumn.tsx'
  */
 export default function Board({
   board,
-  searchWords,
+  filter,
   onAddCard,
   onOpenCard,
   onDeleteCard,
@@ -36,8 +37,8 @@ export default function Board({
   onDraggingChange,
 }: {
   board: BoardData
-  /** 検索している言葉。検索していなければ空 */
-  searchWords: string[]
+  /** 検索・ラベルの絞り込みの条件 */
+  filter: SearchFilter
   onAddCard: (listId: number, newCard: NewCard) => Promise<SaveResult>
   onOpenCard: (card: Card, listId: number) => void
   /** カードを削除する（API-07） */
@@ -147,7 +148,7 @@ export default function Board({
           <ListColumn
             key={list.id}
             list={list}
-            searchWords={searchWords}
+            filter={filter}
             onAddCard={onAddCard}
             onOpenCard={onOpenCard}
             onDeleteCard={onDeleteCard}

@@ -3,10 +3,10 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { cardDragId } from '../dnd.ts'
 import type { Card as CardData, Priority } from '../types.ts'
-import { PRIORITY_LABELS, dueDateStatus, formatDueDate } from '../format.ts'
+import { LABEL_NAMES, PRIORITY_LABELS, dueDateStatus, formatDueDate } from '../format.ts'
 
 /**
- * カード1枚（ドラッグできる）。
+ * カード1枚（ドラッグできる）。ラベル（F-16）があれば、左のはしに色の帯を出す。
  * - クリック（またはキーボードで選んで Enter）すると、詳細画面を開く（F-06）
  * - つかんで動かすと、別のリストへ移したり並べ替えたりできる（F-08・F-09）。キーボードでは Space でつかむ
  * - つかんでいる間、元の場所のカードは半透明になる（置く位置の目印）
@@ -49,11 +49,11 @@ export default function Card({
       {/* oxlint-disable-next-line jsx-a11y/no-static-element-interactions */}
       <div
         ref={setActivatorNodeRef}
-        className={isDragging ? 'card dragging' : 'card'}
+        className={cardClass(card, isDragging ? 'dragging' : '')}
         {...attributes}
         {...listeners}
         aria-disabled={false} // 動かせない間も、クリックや Enter は使える（attributes の aria-disabled を上書きする）
-        aria-label={`${card.text}（Enter で詳細を開く${draggable ? '、Space でつかんで動かす' : ''}）`}
+        aria-label={`${card.text}（${card.label === null ? '' : `ラベルは${LABEL_NAMES[card.label]}、`}Enter で詳細を開く${draggable ? '、Space でつかんで動かす' : ''}）`}
         onClick={onOpen}
         onKeyDown={handleKeyDown}
       >
@@ -66,10 +66,15 @@ export default function Card({
   )
 }
 
+/** カードの CSS のクラス名。ラベルがあれば、その色も付ける */
+function cardClass(card: CardData, state: string): string {
+  return ['card', state, card.label === null ? '' : `labeled label-${card.label}`].filter((name) => name !== '').join(' ')
+}
+
 /** ドラッグ中にマウスについてくるカード（見た目だけ） */
 export function CardOverlay({ card }: { card: CardData }) {
   return (
-    <div className="card overlay">
+    <div className={cardClass(card, 'overlay')}>
       <CardContent card={card} />
     </div>
   )

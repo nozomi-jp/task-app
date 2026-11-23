@@ -28,13 +28,13 @@
 | --- | --- |
 | `src/main.tsx` | 入口 |
 | `src/App.tsx` | ボード画面全体。開いたときに API でボードを読み込む |
-| `src/components/` | 画面の部品（Board・ListColumn・Card・CardDialog・SortButtons・UndoToast・SearchBox） |
+| `src/components/` | 画面の部品（Board・ListColumn・Card・CardDialog・SortButtons・UndoToast・SearchBox・LabelFilter） |
 | `src/state/` | ボードのデータを変える処理（useReducer） |
 | `src/api/` | API を呼ぶ処理 |
 | `src/types.ts` | API でやりとりするデータの形（型）。要件定義書 10章の API-01 と同じ |
-| `src/format.ts` | 期限・優先度の表示のしかた |
+| `src/format.ts` | 期限・優先度・ラベルの表示のしかた |
 | `src/sort.ts` | 今どの順に並んでいるかを調べる |
-| `src/search.ts` | カードの検索 |
+| `src/search.ts` | カードの検索・ラベルでの絞り込み |
 | `src/dnd.ts` | ドラッグ＆ドロップで置く場所を決める |
 | `src/index.css`・`src/App.css` | 見た目（全体・ボード画面） |
 | `tsconfig*.json` | TypeScript の型チェックの設定（Vite のひな型のまま） |

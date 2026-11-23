@@ -240,11 +240,11 @@ v2.0で、発注者から次の指定がありました。
 │       ├── App.css              ボード画面の見た目
 │       ├── types.ts             APIでやりとりするデータの形（型）
 │       ├── App.tsx              ボード画面全体
-│       ├── format.ts            期限・優先度の表示のしかた
+│       ├── format.ts            期限・優先度・ラベルの表示のしかた
 │       ├── sort.ts              今どの順に並んでいるかを調べる（F-13）
-│       ├── search.ts            カードの検索（F-15）
+│       ├── search.ts            カードの検索・ラベルでの絞り込み（F-15・F-16）
 │       ├── dnd.ts               ドラッグ&ドロップで置く場所を決める（F-08・F-09）
-│       ├── components/          画面の部品（Board・ListColumn・Card・CardDialog・SortButtons・UndoToast・SearchBox）
+│       ├── components/          画面の部品（Board・ListColumn・Card・CardDialog・SortButtons・UndoToast・SearchBox・LabelFilter）
 │       ├── state/               データを変える処理（useReducer）
 │       └── api/                 APIを呼ぶ処理
 └── backend/                     バックエンド（Spring Boot）

@@ -4,11 +4,12 @@ import { createCard, deleteCard, moveCard, updateCard } from './api/cardApi.ts'
 import { sortCards } from './api/listApi.ts'
 import Board from './components/Board.tsx'
 import CardDialog from './components/CardDialog.tsx'
+import LabelFilter from './components/LabelFilter.tsx'
 import SearchBox from './components/SearchBox.tsx'
 import UndoToast from './components/UndoToast.tsx'
-import { matchesSearch, parseWords } from './search.ts'
+import { isFiltering, matchesSearch, parseWords } from './search.ts'
 import { boardReducer, findCardPlace } from './state/boardReducer.ts'
-import type { Card, CardFormValues, DeletedCard, NewCard, SaveResult, SortKey } from './types.ts'
+import type { Card, CardFormValues, DeletedCard, Label, NewCard, SaveResult, SortKey } from './types.ts'
 import './App.css'
 
 /** 1枚消してから、次の「×」を受け付けるまでの時間（ミリ秒） */
@@ -36,7 +37,9 @@ export default function App() {
   const deletedCards = useRef<DeletedCard[]>([]) // 消したカード（最後が、いちばん新しく消したもの）。読み込み直すと空になる
   const dragging = useRef(false) // カードをつかんでいる間か
   const [query, setQuery] = useState('') // 検索の欄の文字
+  const [labelFilter, setLabelFilter] = useState<Label | null>(null) // 絞り込んでいるラベルの色
   const searchInput = useRef<HTMLInputElement>(null)
+  const labelFilteredAt = useRef(0) // ラベルの色を最後に選んだ時刻
 
   // 画面を開いたときに1回だけ読み込む
   useEffect(() => {
@@ -73,9 +76,22 @@ export default function App() {
     [reloadBoard],
   )
 
+  /** ラベルの色で絞り込む（null ならやめる） */
+  const handleLabelFilter = useCallback((label: Label | null) => {
+    labelFilteredAt.current = Date.now()
+    setLabelFilter(label)
+  }, [])
+
+  /** 検索・ラベルの絞り込みをやめる */
+  const clearSearch = useCallback(() => {
+    setQuery('')
+    setLabelFilter(null)
+  }, [])
+
   /** 検索中に増えたカードが検索に合わなければ、検索をやめる（隠れたままだと、増えたことがわからないため） */
   const showCard = useCallback((card: Card) => {
-    setQuery((current) => (matchesSearch(card, parseWords(current)) ? current : ''))
+    setQuery((current) => (matchesSearch(card, { words: parseWords(current), label: null }) ? current : ''))
+    setLabelFilter((current) => (matchesSearch(card, { words: [], label: current }) ? current : null))
   }, [])
 
   /**
@@ -139,7 +155,7 @@ export default function App() {
         dispatch({ type: 'cardDeleted', cardId })
         setErrorMessage(null)
         if (card && place) {
-          const deleted = { card, ...place }
+          const deleted = { card, ...place, deletedAt: now }
           deletedCards.current.push(deleted)
           setUndoToast(deleted)
         }
@@ -196,18 +212,38 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
-  // Ctrl + Z で、消したカードを戻す。入力欄・ダイアログの中では、ブラウザの「文字を戻す」のままにする
+  // Esc で、検索・ラベルの絞り込みをやめる。検索の欄の中の Esc は SearchBox が、ダイアログの Esc はダイアログが受け持つ
+  const filtering = isFiltering({ words: parseWords(query), label: labelFilter })
+  useEffect(() => {
+    if (!filtering) return
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key !== 'Escape' || e.target === searchInput.current) return
+      if (document.querySelector('dialog[open]') !== null) return
+      e.preventDefault()
+      clearSearch()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [filtering, clearSearch])
+
+  // Ctrl + Z で、消したカードを戻すか、ラベルの色の絞り込みをやめる（いちばん新しくしたほうを先に）。
+  // 入力欄・ダイアログの中では、ブラウザの「文字を戻す」のままにする
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       if (!e.ctrlKey || e.shiftKey || e.altKey || e.key.toLowerCase() !== 'z') return
       if (e.repeat || isTextField(e.target) || document.querySelector('dialog[open]') !== null) return
-      if (deletedCards.current.length === 0) return
+      const last = deletedCards.current.at(-1)
+      if (last === undefined && labelFilter === null) return
       e.preventDefault()
-      void handleUndoDelete()
+      if (labelFilter !== null && (last === undefined || last.deletedAt < labelFilteredAt.current)) {
+        setLabelFilter(null)
+      } else {
+        void handleUndoDelete()
+      }
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [handleUndoDelete])
+  }, [handleUndoDelete, labelFilter])
 
   /** リストの中のカードを並べ替える（F-13、API-09）。失敗したら右上に赤い字で理由を出し、読み込み直す */
   const handleSortCards = useCallback(
@@ -238,17 +274,22 @@ export default function App() {
     [handleSaveError],
   )
 
-  const words = parseWords(query)
+  const filter = { words: parseWords(query), label: labelFilter }
   const found =
-    board === null || words.length === 0
+    board === null || !isFiltering(filter)
       ? null
-      : board.lists.flatMap((list) => list.cards).filter((card) => matchesSearch(card, words)).length
+      : board.lists.flatMap((list) => list.cards).filter((card) => matchesSearch(card, filter)).length
 
   return (
     <>
       <header className="header">
         <h1 className="board-title">マイボード</h1>
-        {board !== null && <SearchBox inputRef={searchInput} query={query} count={found} onChange={setQuery} />}
+        {board !== null && (
+          <search className="search">
+            <SearchBox inputRef={searchInput} query={query} count={found} onChange={setQuery} onClear={clearSearch} />
+            <LabelFilter selected={labelFilter} onChange={handleLabelFilter} />
+          </search>
+        )}
         {errorMessage ? (
           <span className="save-status error" role="alert">
             {errorMessage}
@@ -262,7 +303,7 @@ export default function App() {
       ) : (
         <Board
           board={board}
-          searchWords={words}
+          filter={filter}
           onAddCard={handleAddCard}
           onOpenCard={(card, listId) => setOpenCard({ card, listId })}
           onDeleteCard={handleDeleteCard}

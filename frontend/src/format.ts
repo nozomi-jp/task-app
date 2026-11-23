@@ -1,5 +1,5 @@
-// 期限と優先度の表示のしかた（要件定義書 F-11・F-12）
-import type { Priority } from './types.ts'
+// 期限・優先度・ラベルの表示のしかた（要件定義書 F-11・F-12・F-16）
+import type { Label, Priority } from './types.ts'
 
 /**
  * "2026-11-25" のような日付の文字を、年・月・日の数に分ける。
@@ -44,4 +44,17 @@ export const PRIORITY_LABELS: Record<Priority, string> = {
   high: '高',
   medium: '中',
   low: '低',
+}
+
+/** ラベルの色（選ぶときに並べる順） */
+export const LABELS: Label[] = ['green', 'sky', 'blue', 'purple', 'pink', 'gray']
+
+/** ラベルの色の名前（API の値 → 画面の文字） */
+export const LABEL_NAMES: Record<Label, string> = {
+  green: '緑',
+  sky: '水色',
+  blue: '青',
+  purple: '紫',
+  pink: 'ピンク',
+  gray: 'グレー',
 }

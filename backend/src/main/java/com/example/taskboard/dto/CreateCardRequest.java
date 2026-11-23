@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Size;
 
 /**
  * API-05 POST /api/lists/{id}/cards で送られてくるデータの形。
- * 例：{"text": "買い物", "description": "牛乳と卵", "priority": "medium", "dueDate": "2026-11-25"}
+ * 例：{"text": "買い物", "description": "牛乳と卵", "priority": "medium", "dueDate": "2026-11-25", "label": "green"}
  * text 以外は省略してよい（null）。
  * position は、リストの上から何番目に入れるか（0始まり）。省略すると一番下。消したカードを元の場所に戻すときに使う（F-14）。
  * 入力のルール（要件定義書 6.1）は画面でもチェックするが、API を直接呼ばれても守れるように、ここでもチェックする（NFR-22）。
@@ -28,6 +28,10 @@ public record CreateCardRequest(
         String priority,
 
         LocalDate dueDate,
+
+        @Pattern(regexp = "green|sky|blue|purple|pink|gray",
+                message = "ラベルは green・sky・blue・purple・pink・gray のどれかにしてください")
+        String label,
 
         @Min(value = 0, message = "カードの位置は0以上にしてください")
         Integer position) {
