@@ -235,7 +235,7 @@ v2.0で、発注者から次の指定がありました。
 │       ├── main.tsx             入口
 │       ├── types.ts             APIでやりとりするデータの形（型）
 │       ├── App.tsx              ボード画面全体
-│       ├── components/          画面の部品（Board・ListColumn・Card・入力欄・メニューなど）
+│       ├── components/          画面の部品（Board・ListColumn・Card・CardDialog など）
 │       ├── state/               データを変える処理（useReducer）
 │       └── api/                 APIを呼ぶ処理
 └── backend/                     バックエンド（Spring Boot）
