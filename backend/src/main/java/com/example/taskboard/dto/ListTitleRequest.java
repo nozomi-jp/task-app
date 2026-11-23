@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 
 /**
- * API-02 POST /api/lists で送られてくるデータの形（リストの名前）。
+ * API-02 POST /api/lists・API-03 PATCH /api/lists/{id} で送られてくるデータの形（リストの名前）。
  * 例：{"title": "保留"}
  * 入力のルール（要件定義書 6.1）は画面でもチェックするが、API を直接呼ばれても守れるように、ここでもチェックする（NFR-22）。
  */
