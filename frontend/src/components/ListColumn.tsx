@@ -17,6 +17,7 @@ export default function ListColumn({
   list,
   filter,
   onRename,
+  onDelete,
   onAddCard,
   onOpenCard,
   onDeleteCard,
@@ -26,6 +27,8 @@ export default function ListColumn({
   filter: SearchFilter
   /** このリストの名前を変える */
   onRename: (title: string) => Promise<SaveResult>
+  /** このリストを削除する */
+  onDelete: () => void
   onAddCard: (listId: number, newCard: NewCard) => Promise<SaveResult>
   onOpenCard: (card: CardData, listId: number) => void
   onDeleteCard: (cardId: number) => void
@@ -43,7 +46,13 @@ export default function ListColumn({
 
   return (
     <section ref={setNodeRef} className={isOver ? 'list drop-target' : 'list'}>
-      <ListHeader list={list} onRename={onRename} onSort={(by, reverse) => onSortCards(list.id, by, reverse)} />
+      <ListHeader
+        list={list}
+        onRename={onRename}
+        // 絞り込んでいる間は、見えていないカードまで消さないように、削除できなくする
+        onDelete={searching ? null : onDelete}
+        onSort={(by, reverse) => onSortCards(list.id, by, reverse)}
+      />
       <SortableContext items={cards.map((card) => cardDragId(card.id))} strategy={verticalListSortingStrategy}>
         <div className="cards">
           {cards.map((card) => (

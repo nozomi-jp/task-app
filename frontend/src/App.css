@@ -136,6 +136,22 @@
 
 .list-title-btn:hover { background: #dcdfe4; }
 
+/* リストを削除する「×」（F-04） */
+.list-delete {
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-left: 2px;
+  padding: 3px 6px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: var(--text-sub);
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.list-delete:hover { background: #dcdfe4; color: var(--error); }
+
 /* ===== 並べ替えのボタン（F-13・SC-01-f） ===== */
 .sort {
   display: flex;

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { fetchBoard } from './api/boardApi.ts'
 import { createCard, deleteCard, moveCard, updateCard } from './api/cardApi.ts'
-import { createList, renameList, sortCards } from './api/listApi.ts'
+import { createList, deleteList, renameList, sortCards } from './api/listApi.ts'
 import Board from './components/Board.tsx'
 import CardDialog from './components/CardDialog.tsx'
 import LabelFilter from './components/LabelFilter.tsx'
@@ -9,10 +9,10 @@ import SearchBox from './components/SearchBox.tsx'
 import UndoToast from './components/UndoToast.tsx'
 import { isFiltering, matchesSearch, parseWords } from './search.ts'
 import { boardReducer, findCardPlace } from './state/boardReducer.ts'
-import type { Card, CardFormValues, DeletedCard, Label, NewCard, SaveResult, SortKey } from './types.ts'
+import type { Card, CardFormValues, DeletedCard, Label, NewCard, SaveResult, SortKey, TaskList } from './types.ts'
 import './App.css'
 
-/** 1枚消してから、次の「×」を受け付けるまでの時間（ミリ秒） */
+/** カードやリストを1つ消してから、次の「×」を受け付けるまでの時間（ミリ秒） */
 const DELETE_GUARD_MS = 500
 
 /** 消した直後の「元に戻す」の知らせを出しておく時間（ミリ秒） */
@@ -275,6 +275,30 @@ export default function App() {
     [handleSaveError],
   )
 
+  /**
+   * リストを削除する（F-04、API-04）。中のカードも消えるので、カードが入っているときは確認を出す（DL-01）。
+   * リストの削除は元に戻せない。消したリストに入っていたカードも、もう戻す場所がないので、「元に戻す」から外す。
+   * 消すと右のリストが詰まってくるので、続けて押された「×」は無視する。
+   */
+  const handleDeleteList = useCallback(
+    async (list: TaskList) => {
+      if (Date.now() - lastDeleteAt.current < DELETE_GUARD_MS) return
+      const count = list.cards.length
+      if (count > 0 && !window.confirm(`『${list.title}』を削除しますか？中のカード${count}枚も削除されます`)) return
+      lastDeleteAt.current = Date.now()
+      try {
+        await deleteList(list.id)
+        dispatch({ type: 'listDeleted', listId: list.id })
+        deletedCards.current = deletedCards.current.filter((deleted) => deleted.listId !== list.id)
+        setUndoToast((current) => (current?.listId === list.id ? null : current))
+        setErrorMessage(null)
+      } catch (error) {
+        handleSaveError(error)
+      }
+    },
+    [handleSaveError],
+  )
+
   /** リストの中のカードを並べ替える（F-13、API-09）。失敗したら右上に赤い字で理由を出し、読み込み直す */
   const handleSortCards = useCallback(
     async (listId: number, by: SortKey, reverse: boolean) => {
@@ -336,6 +360,7 @@ export default function App() {
           filter={filter}
           onAddList={handleAddList}
           onRenameList={handleRenameList}
+          onDeleteList={handleDeleteList}
           onAddCard={handleAddCard}
           onOpenCard={(card, listId) => setOpenCard({ card, listId })}
           onDeleteCard={handleDeleteCard}
