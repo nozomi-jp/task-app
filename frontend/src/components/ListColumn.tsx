@@ -6,7 +6,7 @@ import { isFiltering, matchesSearch, type SearchFilter } from '../search.ts'
 import type { Card as CardData, NewCard, SaveResult, SortKey, TaskList } from '../types.ts'
 import Card from './Card.tsx'
 import CardDialog from './CardDialog.tsx'
-import SortButtons from './SortButtons.tsx'
+import ListHeader from './ListHeader.tsx'
 
 /**
  * リスト1つ。リスト名と並べ替えのボタン、その中のカードを上から並び順どおりに出し、下に「+ カードを追加」を置く。
@@ -16,6 +16,7 @@ import SortButtons from './SortButtons.tsx'
 export default function ListColumn({
   list,
   filter,
+  onRename,
   onAddCard,
   onOpenCard,
   onDeleteCard,
@@ -23,6 +24,8 @@ export default function ListColumn({
 }: {
   list: TaskList
   filter: SearchFilter
+  /** このリストの名前を変える */
+  onRename: (title: string) => Promise<SaveResult>
   onAddCard: (listId: number, newCard: NewCard) => Promise<SaveResult>
   onOpenCard: (card: CardData, listId: number) => void
   onDeleteCard: (cardId: number) => void
@@ -40,10 +43,7 @@ export default function ListColumn({
 
   return (
     <section ref={setNodeRef} className={isOver ? 'list drop-target' : 'list'}>
-      <div className="list-header">
-        <h2 className="list-title">{list.title}</h2>
-        <SortButtons cards={list.cards} onSort={(by, reverse) => onSortCards(list.id, by, reverse)} />
-      </div>
+      <ListHeader list={list} onRename={onRename} onSort={(by, reverse) => onSortCards(list.id, by, reverse)} />
       <SortableContext items={cards.map((card) => cardDragId(card.id))} strategy={verticalListSortingStrategy}>
         <div className="cards">
           {cards.map((card) => (

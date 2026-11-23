@@ -118,11 +118,23 @@
 .list-title {
   flex: 1;
   margin: 0;
-  padding: 2px 4px;
   font-size: 14px;
+}
+
+/* リスト名。押すと入力欄に変わる（F-03） */
+.list-title-btn {
+  padding: 2px 4px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  font: inherit;
   font-weight: bold;
+  text-align: left;
   word-break: break-all;
 }
+
+.list-title-btn:hover { background: #dcdfe4; }
 
 /* ===== 並べ替えのボタン（F-13・SC-01-f） ===== */
 .sort {

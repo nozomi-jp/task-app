@@ -11,6 +11,15 @@ export function createList(title: string): Promise<TaskList> {
   })
 }
 
+/** API-03：リストの名前を変える。変えたあとのリストが返る */
+export function renameList(listId: number, title: string): Promise<TaskList> {
+  return requestJson<TaskList>(`/api/lists/${listId}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title }),
+  })
+}
+
 /**
  * API-09：リストの中のカードを並べ替える。並べ替えたあとのリスト（カードを並び順どおりに含む）が返る。
  * reverse が false なら期限が近い順・優先度が高い順、true ならその反対。

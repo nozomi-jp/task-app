@@ -29,6 +29,7 @@ export default function Board({
   board,
   filter,
   onAddList,
+  onRenameList,
   onAddCard,
   onOpenCard,
   onDeleteCard,
@@ -43,6 +44,8 @@ export default function Board({
   filter: SearchFilter
   /** リストを追加する（API-02） */
   onAddList: (title: string) => Promise<SaveResult>
+  /** リストの名前を変える（API-03） */
+  onRenameList: (listId: number, title: string) => Promise<SaveResult>
   onAddCard: (listId: number, newCard: NewCard) => Promise<SaveResult>
   onOpenCard: (card: Card, listId: number) => void
   /** カードを削除する（API-07） */
@@ -153,6 +156,7 @@ export default function Board({
             key={list.id}
             list={list}
             filter={filter}
+            onRename={(title) => onRenameList(list.id, title)}
             onAddCard={onAddCard}
             onOpenCard={onOpenCard}
             onDeleteCard={onDeleteCard}

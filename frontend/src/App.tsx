@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { fetchBoard } from './api/boardApi.ts'
 import { createCard, deleteCard, moveCard, updateCard } from './api/cardApi.ts'
-import { createList, sortCards } from './api/listApi.ts'
+import { createList, renameList, sortCards } from './api/listApi.ts'
 import Board from './components/Board.tsx'
 import CardDialog from './components/CardDialog.tsx'
 import LabelFilter from './components/LabelFilter.tsx'
@@ -260,6 +260,21 @@ export default function App() {
     [handleSaveError],
   )
 
+  /** リストの名前を変える（F-03、API-03）。失敗したときの動きは、リストの追加と同じ */
+  const handleRenameList = useCallback(
+    async (listId: number, title: string): Promise<SaveResult> => {
+      try {
+        const list = await renameList(listId, title)
+        dispatch({ type: 'listRenamed', listId, title: list.title })
+        setErrorMessage(null)
+        return null
+      } catch (error) {
+        return handleSaveError(error)
+      }
+    },
+    [handleSaveError],
+  )
+
   /** リストの中のカードを並べ替える（F-13、API-09）。失敗したら右上に赤い字で理由を出し、読み込み直す */
   const handleSortCards = useCallback(
     async (listId: number, by: SortKey, reverse: boolean) => {
@@ -320,6 +335,7 @@ export default function App() {
           board={board}
           filter={filter}
           onAddList={handleAddList}
+          onRenameList={handleRenameList}
           onAddCard={handleAddCard}
           onOpenCard={(card, listId) => setOpenCard({ card, listId })}
           onDeleteCard={handleDeleteCard}

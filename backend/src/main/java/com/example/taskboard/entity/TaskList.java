@@ -1,5 +1,7 @@
 package com.example.taskboard.entity;
 
+import java.time.OffsetDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -26,6 +28,10 @@ public class TaskList {
     @Column(nullable = false)
     private Integer position;
 
+    /** 最後に変更した日時。作るときはデータベースの初期値（now()）が入るので、ここからは入れない（insertable = false） */
+    @Column(name = "updated_at", insertable = false)
+    private OffsetDateTime updatedAt;
+
     protected TaskList() {
         // JPA が使う
     }
@@ -34,6 +40,12 @@ public class TaskList {
     public TaskList(String title, Integer position) {
         this.title = title;
         this.position = position;
+    }
+
+    /** 名前を変える（F-03） */
+    public void rename(String title) {
+        this.title = title;
+        this.updatedAt = OffsetDateTime.now();
     }
 
     public Long getId() {

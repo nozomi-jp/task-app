@@ -1,6 +1,8 @@
 package com.example.taskboard.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,5 +36,14 @@ public class ListController {
     @ResponseStatus(HttpStatus.CREATED)
     public ListResponse createList(@Valid @RequestBody ListTitleRequest request) {
         return listService.createList(request);
+    }
+
+    /**
+     * API-03：リストの名前を変える。
+     * 成功したら 200 と、変えたあとのリスト（カードを並び順どおりに含む）を返す。
+     */
+    @PatchMapping("/{listId}")
+    public ListResponse renameList(@PathVariable Long listId, @Valid @RequestBody ListTitleRequest request) {
+        return listService.renameList(listId, request);
     }
 }
