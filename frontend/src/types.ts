@@ -40,6 +40,8 @@ export type DeletedCard = {
   card: Card
   listId: number
   index: number
+  /** 消した時刻（Ctrl + Z で、いちばん新しくしたことから戻すために比べる） */
+  deletedAt: number
 }
 
 /** カードを更新するときに送るもの（API-06 PATCH）。説明・優先度・期限・ラベルは null で「なし」にする。listId はステータス（移す先のリスト） */
