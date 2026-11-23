@@ -4,11 +4,12 @@ import { createCard, deleteCard, moveCard, updateCard } from './api/cardApi.ts'
 import { sortCards } from './api/listApi.ts'
 import Board from './components/Board.tsx'
 import CardDialog from './components/CardDialog.tsx'
+import LabelFilter from './components/LabelFilter.tsx'
 import SearchBox from './components/SearchBox.tsx'
 import UndoToast from './components/UndoToast.tsx'
-import { matchesSearch, parseWords } from './search.ts'
+import { isFiltering, matchesSearch, parseWords } from './search.ts'
 import { boardReducer, findCardPlace } from './state/boardReducer.ts'
-import type { Card, CardFormValues, DeletedCard, NewCard, SaveResult, SortKey } from './types.ts'
+import type { Card, CardFormValues, DeletedCard, Label, NewCard, SaveResult, SortKey } from './types.ts'
 import './App.css'
 
 /** 1枚消してから、次の「×」を受け付けるまでの時間（ミリ秒） */
@@ -36,6 +37,7 @@ export default function App() {
   const deletedCards = useRef<DeletedCard[]>([]) // 消したカード（最後が、いちばん新しく消したもの）。読み込み直すと空になる
   const dragging = useRef(false) // カードをつかんでいる間か
   const [query, setQuery] = useState('') // 検索の欄の文字
+  const [labelFilter, setLabelFilter] = useState<Label | null>(null) // 絞り込んでいるラベルの色
   const searchInput = useRef<HTMLInputElement>(null)
 
   // 画面を開いたときに1回だけ読み込む
@@ -73,9 +75,16 @@ export default function App() {
     [reloadBoard],
   )
 
+  /** 検索・ラベルの絞り込みをやめる */
+  const clearSearch = useCallback(() => {
+    setQuery('')
+    setLabelFilter(null)
+  }, [])
+
   /** 検索中に増えたカードが検索に合わなければ、検索をやめる（隠れたままだと、増えたことがわからないため） */
   const showCard = useCallback((card: Card) => {
-    setQuery((current) => (matchesSearch(card, parseWords(current)) ? current : ''))
+    setQuery((current) => (matchesSearch(card, { words: parseWords(current), label: null }) ? current : ''))
+    setLabelFilter((current) => (matchesSearch(card, { words: [], label: current }) ? current : null))
   }, [])
 
   /**
@@ -238,17 +247,22 @@ export default function App() {
     [handleSaveError],
   )
 
-  const words = parseWords(query)
+  const filter = { words: parseWords(query), label: labelFilter }
   const found =
-    board === null || words.length === 0
+    board === null || !isFiltering(filter)
       ? null
-      : board.lists.flatMap((list) => list.cards).filter((card) => matchesSearch(card, words)).length
+      : board.lists.flatMap((list) => list.cards).filter((card) => matchesSearch(card, filter)).length
 
   return (
     <>
       <header className="header">
         <h1 className="board-title">マイボード</h1>
-        {board !== null && <SearchBox inputRef={searchInput} query={query} count={found} onChange={setQuery} />}
+        {board !== null && (
+          <search className="search">
+            <SearchBox inputRef={searchInput} query={query} count={found} onChange={setQuery} onClear={clearSearch} />
+            <LabelFilter selected={labelFilter} onChange={setLabelFilter} />
+          </search>
+        )}
         {errorMessage ? (
           <span className="save-status error" role="alert">
             {errorMessage}
@@ -262,7 +276,7 @@ export default function App() {
       ) : (
         <Board
           board={board}
-          searchWords={words}
+          filter={filter}
           onAddCard={handleAddCard}
           onOpenCard={(card, listId) => setOpenCard({ card, listId })}
           onDeleteCard={handleDeleteCard}

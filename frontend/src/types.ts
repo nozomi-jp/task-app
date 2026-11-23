@@ -4,6 +4,9 @@
 /** 優先度。API では英語の3つのどれか。なければ null */
 export type Priority = 'high' | 'medium' | 'low'
 
+/** ラベルの色。API では英語の6つのどれか。なければ null */
+export type Label = 'green' | 'sky' | 'blue' | 'purple' | 'pink' | 'gray'
+
 /** カード（タスク） */
 export type Card = {
   id: number
@@ -13,6 +16,7 @@ export type Card = {
   /** 期限。"2026-11-25" の形の文字。なければ null */
   dueDate: string | null
   priority: Priority | null
+  label: Label | null
 }
 
 /** リスト。カードは上から並び順どおり */
@@ -28,6 +32,7 @@ export type NewCard = {
   description: string | null
   priority: Priority | null
   dueDate: string | null
+  label: Label | null
 }
 
 /** 消したカード。元に戻すために、中身と、消したときの場所（リストと、上から何番目か）を覚えておく（F-14） */
@@ -37,7 +42,7 @@ export type DeletedCard = {
   index: number
 }
 
-/** カードを更新するときに送るもの（API-06 PATCH）。説明・優先度・期限は null で「なし」にする。listId はステータス（移す先のリスト） */
+/** カードを更新するときに送るもの（API-06 PATCH）。説明・優先度・期限・ラベルは null で「なし」にする。listId はステータス（移す先のリスト） */
 export type CardUpdate = CardFormValues
 
 /** 並べ替えの種類（F-13）。dueDate：期限、priority：優先度 */

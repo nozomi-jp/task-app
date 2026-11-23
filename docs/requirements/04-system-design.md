@@ -61,6 +61,7 @@ erDiagram
         varchar description "説明（1000文字まで、なしはNULL）"
         date due_date "期限（なしはNULL）"
         varchar priority "優先度 high/medium/low（なしはNULL）"
+        varchar label "ラベルの色（なしはNULL）"
         integer position "リスト内の並び順（0始まり）"
         timestamptz created_at "作成日時"
         timestamptz updated_at "更新日時"
@@ -95,6 +96,7 @@ erDiagram
 | description | varchar(1000) | | 説明（F-05、v2.9 で追加）。1000文字まで、改行を含んでよい。説明がないときは空（NULL）。空文字は入れられない（CHECK制約） |
 | due_date | date | | 期限（F-11）。期限がないときは空（NULL） |
 | priority | varchar(6) | | 優先度（F-12）。`high`・`medium`・`low` のどれかだけ入れられる（CHECK制約）。ないときは空（NULL） |
+| label | varchar(6) | | ラベルの色（F-16、v2.26 で追加）。`green`・`sky`・`blue`・`purple`・`pink`・`gray` のどれかだけ入れられる（CHECK制約）。ないときは空（NULL） |
 | position | integer | ○ | リスト内の並び順。0から始まる |
 | created_at | timestamptz | ○ | 作成した日時。自動で入れる |
 | updated_at | timestamptz | ○ | 最後に変更した日時。自動で入れる |
@@ -110,6 +112,7 @@ erDiagram
 | `V1__create_tables.sql` | `lists`・`cards` テーブルを作る |
 | `V2__insert_initial_lists.sql` | 「ToDo」「進行中」「完了」の3つのリストを入れる |
 | `V3__add_card_description.sql` | `cards` に `description`（説明）の列を足す（v2.9）。今あるカードは説明なし（NULL）のまま残る |
+| `V4__add_card_label.sql` | `cards` に `label`（ラベルの色）の列を足す（v2.26）。今あるカードはラベルなし（NULL）のまま残る |
 
 V2 は**最初の1回しか実行されない**ので、初期データは「テーブルを最初に作ったときだけ」入ります。
 
@@ -128,14 +131,14 @@ V2 は**最初の1回しか実行されない**ので、初期データは「テ
 | No | メソッド | URL | 用途 | 送るデータ | 成功時の返事 |
 | --- | --- | --- | --- | --- | --- |
 | API-01 | GET | `/api/board` | ボード全体を読み込む | なし | 200：ボード全体（下の例） |
-| API-05 | POST | `/api/lists/{id}/cards` | カードを一番下（`position` を送れば、その場所）に追加する | `{"text": "買い物", "description": "牛乳と卵", "priority": "medium", "dueDate": "2026-11-25"}`（`text` 以外は省略または `null` でよい。`"position": 0` も送れる） | 201：追加したカード |
-| API-06 | PATCH | `/api/cards/{id}` | カードの内容（タイトル・説明・期限・優先度）とステータス（リスト）を変更する（詳細画面の「保存」） | `{"text": "買い物に行く", "description": null, "priority": "high", "dueDate": "2026-11-25", "listId": 2}` | 200：変更後のカード |
+| API-05 | POST | `/api/lists/{id}/cards` | カードを一番下（`position` を送れば、その場所）に追加する | `{"text": "買い物", "description": "牛乳と卵", "priority": "medium", "dueDate": "2026-11-25", "label": "green"}`（`text` 以外は省略または `null` でよい。`"position": 0` も送れる） | 201：追加したカード |
+| API-06 | PATCH | `/api/cards/{id}` | カードの内容（タイトル・説明・期限・優先度・ラベル）とステータス（リスト）を変更する（詳細画面の「保存」） | `{"text": "買い物に行く", "description": null, "priority": "high", "dueDate": "2026-11-25", "label": null, "listId": 2}` | 200：変更後のカード |
 | API-07 | DELETE | `/api/cards/{id}` | カードを削除する（物理削除。データベースから行ごとなくなる） | なし | 204：返事の中身なし |
 | API-08 | PUT | `/api/cards/{id}/position` | カードを移動・並べ替えする（ドラッグ＆ドロップ） | `{"listId": 2, "position": 0}` | 200：移動後のカード |
 | API-09 | POST | `/api/lists/{id}/sort` | リストの中のカードを期限順・優先度順に並べ替える（F-13） | `{"by": "dueDate", "reverse": false}`（`by` は `dueDate` か `priority`。`reverse` を `true` にすると反対の順、省略すると `false`） | 200：並べ替えた後のリスト（カードを並び順どおりに含む） |
 
 - API-02〜04（リストの追加・名前変更・削除）は、v2.20 で19章へ移したため欠番
-- API-06 は、詳細画面から内容の4つの項目（`text`・`description`・`priority`・`dueDate`）とステータス（`listId`）をまとめて送る。`listId` が今と違うリストなら、そのリストの一番下へ移す（省略・`null`・今と同じなら場所は変えない）。**1つのトランザクション**で行い、全部保存されるか、何も変わらないかのどちらかになる（v2.16 で、API-06 と API-08 の2回に分けて呼ぶ形から変更。片方だけ保存されることがあったため）。`description`・`priority`・`dueDate` は `null`（または省略）にすると「なし」にする（v2.10 で、「送った項目だけを変える」から変更。詳細画面はいつも全部の項目を送るので、送らなかった項目と `null` を区別しなくてよい）。ルールは API-05 と同じ。変更すると `updated_at` を今の日時にする
+- API-06 は、詳細画面から内容の5つの項目（`text`・`description`・`priority`・`dueDate`・`label`）とステータス（`listId`）をまとめて送る。`listId` が今と違うリストなら、そのリストの一番下へ移す（省略・`null`・今と同じなら場所は変えない）。**1つのトランザクション**で行い、全部保存されるか、何も変わらないかのどちらかになる（v2.16 で、API-06 と API-08 の2回に分けて呼ぶ形から変更。片方だけ保存されることがあったため）。`description`・`priority`・`dueDate`・`label` は `null`（または省略）にすると「なし」にする（v2.10 で、「送った項目だけを変える」から変更。詳細画面はいつも全部の項目を送るので、送らなかった項目と `null` を区別しなくてよい）。ルールは API-05 と同じ。変更すると `updated_at` を今の日時にする
 - API-08 は、移動先のリストに差し込んだあと、移動元と移動先のリストのカードの `position` を 0 から振り直す（9.4）。別のリストへ移したときは `updated_at` を今の日時にする。詳細画面でのステータスの変更には使わない（API-06）
 - API-05 の `position` は、リストの上から何番目に入れるか（0始まり）。省略または `null` なら一番下、カードの数より大きければ一番下。0より小さければ 400。その場所から下のカードの並び順を1つずつ下げ、1つのトランザクションで保存する。削除を元に戻すとき（F-14）に使う（v2.24 で追加）
 - API-05 の `description` が空、または空白だけのときは、説明なし（`null`）として保存する
@@ -152,8 +155,8 @@ V2 は**最初の1回しか実行されない**ので、初期データは「テ
       "id": 1,
       "title": "ToDo",
       "cards": [
-        { "id": 10, "text": "要件定義を書く", "description": "機能・画面・APIを決める", "dueDate": "2026-11-18", "priority": "high" },
-        { "id": 11, "text": "画面を作る", "description": null, "dueDate": null, "priority": null }
+        { "id": 10, "text": "要件定義を書く", "description": "機能・画面・APIを決める", "dueDate": "2026-11-18", "priority": "high", "label": "green" },
+        { "id": 11, "text": "画面を作る", "description": null, "dueDate": null, "priority": null, "label": null }
       ]
     },
     { "id": 2, "title": "進行中", "cards": [] },
@@ -166,7 +169,7 @@ V2 は**最初の1回しか実行されない**ので、初期データは「テ
 
 | 状態コード | どんなとき | 例 |
 | --- | --- | --- |
-| 400 | 送られたデータがルールに合わない | 空のタイトル、201文字のカード、存在しない日付（2026-02-30）、優先度に `"urgent"` |
+| 400 | 送られたデータがルールに合わない | 空のタイトル、201文字のカード、存在しない日付（2026-02-30）、優先度に `"urgent"`、ラベルに `"red"` |
 | 404 | 指定したリスト・カードがない | 削除済みのカードIDを指定した |
 | 500 | サーバーの中で予期しないエラーが起きた | データベースにつながらない |
 

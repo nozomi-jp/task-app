@@ -48,12 +48,12 @@ public class CardService {
                 ? cardRepository.findMaxPositionByListId(listId) + 1
                 : makeRoom(listId, request.position());
         Card card = new Card(listId, request.text(), blankToNull(request.description()), request.dueDate(),
-                request.priority(), position);
+                request.priority(), request.label(), position);
         return CardResponse.from(cardRepository.save(card));
     }
 
     /**
-     * カードの内容（タイトル・説明・期限・優先度）を更新し、ステータス（リスト）が変わっていれば、そのリストの一番下へ移す
+     * カードの内容（タイトル・説明・期限・優先度・ラベル）を更新し、ステータス（リスト）が変わっていれば、そのリストの一番下へ移す
      * （詳細画面、API-06）。
      * 1つのトランザクションで行うので、移せなかったときは内容も変わらない（片方だけ保存されることはない）。
      * トランザクションの中で変えたカードは、終わるときに自動でデータベースに保存される。
@@ -64,7 +64,7 @@ public class CardService {
     public CardResponse updateCard(Long cardId, UpdateCardRequest request) {
         Card card = findCard(cardId);
         card.updateContent(request.text(), blankToNull(request.description()), request.dueDate(),
-                request.priority());
+                request.priority(), request.label());
         if (request.listId() != null && !request.listId().equals(card.getListId())) {
             place(card, request.listId(), Integer.MAX_VALUE); // 一番下
         }

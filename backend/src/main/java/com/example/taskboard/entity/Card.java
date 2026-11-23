@@ -40,6 +40,10 @@ public class Card {
     @Column(length = 6)
     private String priority;
 
+    /** ラベルの色（green / sky / blue / purple / pink / gray）。なければ null */
+    @Column(length = 6)
+    private String label;
+
     /** リストの中での並び順（0始まり、上から） */
     @Column(nullable = false)
     private Integer position;
@@ -56,24 +60,27 @@ public class Card {
     }
 
     /**
-     * 新しいカードを作る（F-05）。説明・期限・優先度は null でもよい。
+     * 新しいカードを作る（F-05）。説明・期限・優先度・ラベルは null でもよい。
      * id は保存したときにデータベースが決める。created_at・updated_at はデータベースの初期値（now()）が入る。
      */
-    public Card(Long listId, String text, String description, LocalDate dueDate, String priority, Integer position) {
+    public Card(Long listId, String text, String description, LocalDate dueDate, String priority, String label,
+            Integer position) {
         this.listId = listId;
         this.text = text;
         this.description = description;
         this.dueDate = dueDate;
         this.priority = priority;
+        this.label = label;
         this.position = position;
     }
 
-    /** 内容（タイトル・説明・期限・優先度）を書き換える（F-06・F-11・F-12）。null の項目は「なし」にする */
-    public void updateContent(String text, String description, LocalDate dueDate, String priority) {
+    /** 内容（タイトル・説明・期限・優先度・ラベル）を書き換える（F-06・F-11・F-12・F-16）。null の項目は「なし」にする */
+    public void updateContent(String text, String description, LocalDate dueDate, String priority, String label) {
         this.text = text;
         this.description = description;
         this.dueDate = dueDate;
         this.priority = priority;
+        this.label = label;
         this.updatedAt = OffsetDateTime.now();
     }
 
@@ -113,6 +120,10 @@ public class Card {
 
     public String getPriority() {
         return priority;
+    }
+
+    public String getLabel() {
+        return label;
     }
 
     public Integer getPosition() {

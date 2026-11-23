@@ -24,12 +24,13 @@ public record BoardResponse(List<ListResponse> lists) {
         }
     }
 
-    public record CardResponse(Long id, String text, String description, LocalDate dueDate, String priority) {
+    public record CardResponse(Long id, String text, String description, LocalDate dueDate, String priority,
+            String label) {
 
         /** カード（テーブルの1行）から、返事の形を作る */
         public static CardResponse from(Card card) {
             return new CardResponse(card.getId(), card.getText(), card.getDescription(), card.getDueDate(),
-                    card.getPriority());
+                    card.getPriority(), card.getLabel());
         }
     }
 }

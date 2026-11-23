@@ -1,5 +1,6 @@
 import { useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent, type MouseEvent } from 'react'
-import type { CardFormValues, Priority, SaveResult } from '../types.ts'
+import { LABELS, LABEL_NAMES } from '../format.ts'
+import type { CardFormValues, Label, Priority, SaveResult } from '../types.ts'
 
 /** 文字数の上限（要件定義書 6.1） */
 const MAX_TITLE_LENGTH = 200
@@ -13,7 +14,7 @@ const PRIORITY_CHOICES: { value: Priority; label: string }[] = [
 
 /**
  * カードの登録・詳細（更新）に使うダイアログ（F-05・F-06、SC-01-b）。
- * - 入力：タイトル（必須）、説明、優先度、期限日。lists を渡すとステータス（どのリストに入れるか）も選べる
+ * - 入力：タイトル（必須）、説明、優先度、期限日、ラベル。lists を渡すとステータス（どのリストに入れるか）も選べる
  * - 「保存」、またはタイトルの欄で Enter → 保存する。うまくいったら閉じる
  *   （日本語入力で変換を確定するための Enter では保存しない）
  * - タイトルが空（空白だけを含む）のあいだは保存できない
@@ -47,6 +48,7 @@ export default function CardDialog({
   const [description, setDescription] = useState(initial.description ?? '')
   const [priority, setPriority] = useState<Priority | null>(initial.priority)
   const [dueDate, setDueDate] = useState(initial.dueDate ?? '')
+  const [label, setLabel] = useState<Label | null>(initial.label)
   const [listId, setListId] = useState(initial.listId)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<SaveResult>(null) // 保存できなかった理由
@@ -75,6 +77,7 @@ export default function CardDialog({
       description: description.trim() === '' ? null : description,
       priority,
       dueDate: dueDate === '' ? null : dueDate,
+      label,
       listId,
     })
     setSaving(false)
@@ -180,6 +183,23 @@ export default function CardDialog({
             onKeyDown={preventSubmitWhileComposing}
           />
         </label>
+
+        <fieldset className="field">
+          <legend className="field-label">ラベル</legend>
+          <div className="radio-row label-row">
+            <label className="radio">
+              <input type="radio" name="label" checked={label === null} onChange={() => setLabel(null)} />
+              なし
+            </label>
+            {LABELS.map((choice) => (
+              <label key={choice} className="radio">
+                <input type="radio" name="label" checked={label === choice} onChange={() => setLabel(choice)} />
+                <span className={`swatch label-${choice}`} />
+                {LABEL_NAMES[choice]}
+              </label>
+            ))}
+          </div>
+        </fieldset>
 
         <p className="hint">タイトルの欄で Enter を押しても保存できます</p>
 

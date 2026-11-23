@@ -9,16 +9,16 @@ import { requestJson, requestNoContent } from './client.ts'
  * 成功するとサーバーは 201 と、追加したカード（データベースが決めた id 付き）を返す。
  */
 export function createCard(listId: number, newCard: NewCard, position?: number): Promise<Card> {
-  const { text, description, priority, dueDate } = newCard
+  const { text, description, priority, dueDate, label } = newCard
   return requestJson<Card>(`/api/lists/${listId}/cards`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text, description, priority, dueDate, position }),
+    body: JSON.stringify({ text, description, priority, dueDate, label, position }),
   })
 }
 
 /**
- * API-06：カードの内容（タイトル・説明・優先度・期限）とステータスを、まとめて更新する（PATCH）。
+ * API-06：カードの内容（タイトル・説明・優先度・期限・ラベル）とステータスを、まとめて更新する（PATCH）。
  * ステータス（listId）が変わっていれば、そのリストの一番下へ移る。全部保存されるか、何も変わらないかのどちらか。
  */
 export function updateCard(cardId: number, update: CardUpdate): Promise<Card> {
