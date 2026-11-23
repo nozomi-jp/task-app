@@ -14,7 +14,7 @@ import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { detectDropTarget, parseDragId } from '../dnd.ts'
 import type { SearchFilter } from '../search.ts'
 import { findCardPlace, moveCardInBoard } from '../state/boardReducer.ts'
-import type { Board as BoardData, Card, NewCard, SaveResult, SortKey } from '../types.ts'
+import type { Board as BoardData, Card, NewCard, SaveResult, SortKey, TaskList } from '../types.ts'
 import AddList from './AddList.tsx'
 import { CardOverlay } from './Card.tsx'
 import ListColumn from './ListColumn.tsx'
@@ -30,6 +30,7 @@ export default function Board({
   filter,
   onAddList,
   onRenameList,
+  onDeleteList,
   onAddCard,
   onOpenCard,
   onDeleteCard,
@@ -46,6 +47,8 @@ export default function Board({
   onAddList: (title: string) => Promise<SaveResult>
   /** リストの名前を変える（API-03） */
   onRenameList: (listId: number, title: string) => Promise<SaveResult>
+  /** リストを削除する（API-04） */
+  onDeleteList: (list: TaskList) => void
   onAddCard: (listId: number, newCard: NewCard) => Promise<SaveResult>
   onOpenCard: (card: Card, listId: number) => void
   /** カードを削除する（API-07） */
@@ -157,6 +160,7 @@ export default function Board({
             list={list}
             filter={filter}
             onRename={(title) => onRenameList(list.id, title)}
+            onDelete={() => onDeleteList(list)}
             onAddCard={onAddCard}
             onOpenCard={onOpenCard}
             onDeleteCard={onDeleteCard}

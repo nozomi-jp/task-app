@@ -48,6 +48,11 @@ public class TaskList {
         this.updatedAt = OffsetDateTime.now();
     }
 
+    /** 並び順だけを振り直す（ほかのリストを消して、すき間を詰めるとき） */
+    public void setPosition(int position) {
+        this.position = position;
+    }
+
     public Long getId() {
         return id;
     }

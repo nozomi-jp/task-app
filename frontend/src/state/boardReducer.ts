@@ -9,6 +9,8 @@ export type BoardAction =
   | { type: 'listAdded'; list: TaskList }
   /** リストの名前を変えた（中のカードと場所はそのまま） */
   | { type: 'listRenamed'; listId: number; title: string }
+  /** リストを削除した（中のカードも） */
+  | { type: 'listDeleted'; listId: number }
   /** カードを追加した（API が返したカードを、そのリストの一番下に足す。index があれば、その位置に入れる） */
   | { type: 'cardAdded'; listId: number; card: Card; index?: number }
   /** カードの内容を更新した（API が返したカードで、同じ id のカードを置き換える。場所は変えない） */
@@ -34,6 +36,8 @@ export function boardReducer(state: BoardState, action: BoardAction): BoardState
       return {
         lists: state.lists.map((list) => (list.id === action.listId ? { ...list, title: action.title } : list)),
       }
+    case 'listDeleted':
+      return state === null ? state : { lists: state.lists.filter((list) => list.id !== action.listId) }
     case 'cardAdded':
       if (state === null) return state
       return {

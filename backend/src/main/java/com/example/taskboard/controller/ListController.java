@@ -1,6 +1,7 @@
 package com.example.taskboard.controller;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -45,5 +46,15 @@ public class ListController {
     @PatchMapping("/{listId}")
     public ListResponse renameList(@PathVariable Long listId, @Valid @RequestBody ListTitleRequest request) {
         return listService.renameList(listId, request);
+    }
+
+    /**
+     * API-04：リストを削除する（中のカードも。データベースから行ごとなくなる）。
+     * 成功したら 204（No Content：成功したが、返す中身はない）。
+     */
+    @DeleteMapping("/{listId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteList(@PathVariable Long listId) {
+        listService.deleteList(listId);
     }
 }
