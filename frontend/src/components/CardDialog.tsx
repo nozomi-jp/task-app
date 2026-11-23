@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type MouseEvent } from 'react'
-import type { CardFormValues, Priority } from '../types.ts'
+import type { CardFormValues, Priority, SaveResult } from '../types.ts'
 
 /** 文字数の上限（要件定義書 6.1） */
 const MAX_TITLE_LENGTH = 200
@@ -18,7 +18,7 @@ const PRIORITY_CHOICES: { value: Priority; label: string }[] = [
  *   （日本語入力で変換を確定するための Enter では保存しない）
  * - タイトルが空（空白だけを含む）のあいだは保存できない
  * - 「キャンセル」・Esc・ダイアログの外をクリック → 保存せずに閉じる
- * - 保存に失敗したときは閉じずに、入力した内容を残す
+ * - 保存に失敗したときは閉じずに、入力した内容を残し、ボタンの上に理由を出す（後ろの右上の表示は暗くて見にくいため）
  */
 export default function CardDialog({
   heading,
@@ -39,8 +39,7 @@ export default function CardDialog({
   allowNoPriority: boolean
   /** ステータスとして選べるリスト。渡さなければステータスの欄は出さない */
   lists?: { id: number; title: string }[]
-  /** 保存できたら true を返す */
-  onSave: (values: CardFormValues) => Promise<boolean>
+  onSave: (values: CardFormValues) => Promise<SaveResult>
   onClose: () => void
 }) {
   const dialogRef = useRef<HTMLDialogElement>(null)
@@ -50,6 +49,7 @@ export default function CardDialog({
   const [dueDate, setDueDate] = useState(initial.dueDate ?? '')
   const [listId, setListId] = useState(initial.listId)
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<SaveResult>(null) // 保存できなかった理由
 
   // ブラウザ標準のダイアログとして開く（後ろが暗くなり、後ろの画面は操作できなくなる）
   useEffect(() => {
@@ -65,7 +65,8 @@ export default function CardDialog({
     e.preventDefault()
     if (!canSave) return
     setSaving(true)
-    const ok = await onSave({
+    setSaveError(null)
+    const error = await onSave({
       text: title.trim(),
       description: description.trim() === '' ? null : description,
       priority,
@@ -73,7 +74,8 @@ export default function CardDialog({
       listId,
     })
     setSaving(false)
-    if (ok) onClose()
+    if (error === null) onClose()
+    else setSaveError(error)
   }
 
   // 日本語入力で変換を確定するための Enter では、フォームを送らない
@@ -176,6 +178,12 @@ export default function CardDialog({
         </label>
 
         <p className="hint">タイトルの欄で Enter を押しても保存できます</p>
+
+        {saveError !== null && (
+          <p className="dialog-error" role="alert">
+            {saveError}
+          </p>
+        )}
 
         <div className="dialog-buttons">
           <button type="button" className="button" onClick={onClose}>

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useDndContext, useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { cardDragId, listDragId } from '../dnd.ts'
-import type { Card as CardData, NewCard, SortKey, TaskList } from '../types.ts'
+import type { Card as CardData, NewCard, SaveResult, SortKey, TaskList } from '../types.ts'
 import Card from './Card.tsx'
 import CardDialog from './CardDialog.tsx'
 import SortButtons from './SortButtons.tsx'
@@ -19,7 +19,7 @@ export default function ListColumn({
   onSortCards,
 }: {
   list: TaskList
-  onAddCard: (listId: number, newCard: NewCard) => Promise<boolean>
+  onAddCard: (listId: number, newCard: NewCard) => Promise<SaveResult>
   onOpenCard: (card: CardData, listId: number) => void
   onDeleteCard: (cardId: number) => void
   onSortCards: (listId: number, by: SortKey, reverse: boolean) => Promise<void>

@@ -5,7 +5,7 @@ import { sortCards } from './api/listApi.ts'
 import Board from './components/Board.tsx'
 import CardDialog from './components/CardDialog.tsx'
 import { boardReducer } from './state/boardReducer.ts'
-import type { Card, CardFormValues, NewCard, SortKey } from './types.ts'
+import type { Card, CardFormValues, NewCard, SaveResult, SortKey } from './types.ts'
 import './App.css'
 
 /** 1枚消してから、次の「×」を受け付けるまでの時間（ミリ秒） */
@@ -46,27 +46,28 @@ export default function App() {
     }
   }, [])
 
-  /** 保存に失敗したとき：右上に赤い字で理由を出し、ボードを読み込み直す（7.2）。戻り値は false */
+  /** 保存に失敗したとき：右上に赤い字で理由を出し、ボードを読み込み直す（7.2）。戻り値は、その理由 */
   const handleSaveError = useCallback(
-    (error: unknown): false => {
-      setErrorMessage(`保存できませんでした（${reasonOf(error)}）`)
+    (error: unknown): string => {
+      const message = `保存できませんでした（${reasonOf(error)}）`
+      setErrorMessage(message)
       void reloadBoard()
-      return false
+      return message
     },
     [reloadBoard],
   )
 
   /**
    * カードを追加する（F-05）。API で保存できたら、返ってきたカードを画面に足す。
-   * 戻り値は、保存できたかどうか（ダイアログを閉じるかどうかに使う）。
+   * 戻り値は、保存の結果（失敗した理由は、ダイアログの中にも出す）。
    */
   const handleAddCard = useCallback(
-    async (listId: number, newCard: NewCard): Promise<boolean> => {
+    async (listId: number, newCard: NewCard): Promise<SaveResult> => {
       try {
         const card = await createCard(listId, newCard)
         dispatch({ type: 'cardAdded', listId, card })
         setErrorMessage(null)
-        return true
+        return null
       } catch (error) {
         return handleSaveError(error)
       }
@@ -79,7 +80,7 @@ export default function App() {
    * 保存できたら、返ってきたカードで置き換え、ステータスが変わっていれば、そのリストの一番下へ移す。
    */
   const handleUpdateCard = useCallback(
-    async (card: Card, currentListId: number, values: CardFormValues): Promise<boolean> => {
+    async (card: Card, currentListId: number, values: CardFormValues): Promise<SaveResult> => {
       try {
         const updated = await updateCard(card.id, values)
         dispatch({ type: 'cardUpdated', card: updated })
@@ -88,7 +89,7 @@ export default function App() {
           dispatch({ type: 'cardMoved', cardId: card.id, toListId: values.listId, toIndex: Number.MAX_SAFE_INTEGER })
         }
         setErrorMessage(null)
-        return true
+        return null
       } catch (error) {
         return handleSaveError(error)
       }
