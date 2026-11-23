@@ -86,6 +86,13 @@ npm.cmd run dev
 
 困ったときは [要件定義書 ⑤ の 12.5「障害時の対応」](docs/requirements/05-nfr-operations-tech.md) を見てください。
 
+## 自動チェック（書き方・バグ）
+
+| 部分 | フォルダ | コマンド |
+| --- | --- | --- |
+| 画面（oxlint） | `frontend` | `npm.cmd run lint` |
+| バックエンド（Checkstyle・SpotBugs） | `backend` | `.\mvnw.cmd compile checkstyle:check spotbugs:check` |
+
 ## フォルダの構成
 
 ```

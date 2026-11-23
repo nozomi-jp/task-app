@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
+<!--
+  バックエンドの書き方のチェック（Checkstyle）。まちがいにつながりやすいものだけを見る、ゆるめの設定。
+  動かし方：backend フォルダで .\mvnw.cmd compile checkstyle:check spotbugs:check
+-->
+<module name="Checker">
+    <property name="severity" value="error"/>
+
+    <!-- 字下げは空白でそろえる。ファイルの最後は改行で終わる。1行は140文字まで -->
+    <module name="FileTabCharacter"/>
+    <module name="NewlineAtEndOfFile">
+        <property name="lineSeparator" value="lf_cr_crlf"/>
+    </module>
+    <module name="LineLength">
+        <property name="max" value="140"/>
+    </module>
+
+    <module name="TreeWalker">
+        <!-- 使っていない・重なっている・まとめすぎの import -->
+        <module name="AvoidStarImport"/>
+        <module name="UnusedImports"/>
+        <module name="RedundantImport"/>
+
+        <!-- まちがいになりやすい書き方 -->
+        <module name="NeedBraces"/>
+        <module name="EmptyStatement"/>
+        <module name="EmptyBlock">
+            <property name="option" value="text"/>
+        </module>
+        <module name="MissingSwitchDefault"/>
+        <module name="FallThrough"/>
+        <module name="EqualsHashCode"/>
+        <module name="StringLiteralEquality"/>
+
+        <!-- 読みやすさ -->
+        <module name="OneTopLevelClass"/>
+        <module name="OneStatementPerLine"/>
+        <module name="ArrayTypeStyle"/>
+        <module name="UpperEll"/>
+        <module name="ModifierOrder"/>
+
+        <!-- 名前の付け方（Java の標準） -->
+        <module name="TypeName"/>
+        <module name="MethodName"/>
+        <module name="MemberName"/>
+        <module name="LocalVariableName"/>
+        <module name="ParameterName"/>
+    </module>
+</module>

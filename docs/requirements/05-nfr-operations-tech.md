@@ -167,6 +167,7 @@ v2.0で、発注者から次の指定がありました。
 | PostgreSQL の動かし方 | Windows版インストーラー ／ Docker（Docker Compose） | Docker | 発注者の指示（v2.1で変更）。①講座・現場で一般的。②設定が `compose.yaml` 1つにまとまり、Gitで管理できる。作り直しもコマンド1つでできる。v2.0では Windows 版を選んで入れたが、サービスは止めて自動で動かない設定にした（pgAdmin を使うため、アンインストールはしない） |
 | データベースの中身を見るツール | pgAdmin ／ psql ／ VS Code の拡張機能 | pgAdmin | ②Windows 版 PostgreSQL と一緒にすでに入っている。`localhost:5432` の `taskboard` に接続すると、Docker のデータベースの中身を画面で見られる（AT-35など） |
 | テスト | 手動（受入テスト表） ／ 自動テスト | 手動 | 機能が少なく、画面操作が中心のため。自動テスト（JUnit・Vitest）は今後の学習課題（19章） |
+| 書き方・バグの自動チェック | 画面：oxlint ／ ESLint。バックエンド：Checkstyle・SpotBugs ／ PMD ／ なし | 画面は oxlint、バックエンドは Checkstyle（書き方）と SpotBugs（バグになりやすい書き方） | 講座の先生の指示（v2.15）。oxlint は Vite のひな型に入っている。Checkstyle と SpotBugs は Java で広く使われ、役割が違うので両方使う。最初はゆるめの設定にする。動かし方：画面は `frontend` で `npm.cmd run lint`、バックエンドは `backend` で `.\mvnw.cmd compile checkstyle:check spotbugs:check` |
 | バージョン管理 | Git ／ なし | Git ＋ GitHub（イシュー・ブランチ・プルリクエスト） | 変更の記録と、壊したときに戻すため。v2.2で、イシューとブランチで作業を分け、main はプルリクエストからしか変えられないようにした（GitHub のルールセットで main を保護、Claude Code のフックで main への commit・push を止める） |
 | エディタ | VS Code | VS Code | 学習中のエディタ。Java の拡張機能（Extension Pack for Java・Spring Boot Extension Pack）を入れる |
 | ER図 | Mermaid ／ 作図ツール | Mermaid | 文字で書けるので、要件定義書と一緒にGitで管理できる。GitHubではそのまま図として表示される（VS Codeでは拡張機能が必要） |
@@ -213,6 +214,8 @@ v2.0で、発注者から次の指定がありました。
 | @types/react・@types/react-dom（React の型の説明書） | 19.3.0 | 2026-11-21 |
 | @types/node（Node.js の型の説明書） | 26.6.6（Node.js 26 に合わせた。ひな型の指定は 24 系） | 2026-11-21 |
 | oxlint（書き方のチェック） | 1.94.0（Vite のひな型が ESLint の代わりに入れるもの） | 2026-11-21 |
+| Checkstyle（Java の書き方のチェック） | 14.4.0（maven-checkstyle-plugin 3.6.0） | 2026-11-23 |
+| SpotBugs（Java のバグのチェック） | 4.10.5（spotbugs-maven-plugin 4.10.5.0） | 2026-11-23 |
 | dnd-kit（ドラッグ&ドロップ） | @dnd-kit/core 6.3.1、@dnd-kit/sortable 10.0.0、@dnd-kit/utilities 3.2.2（安定版の最新。0.x の試験版 @dnd-kit/react は使わない） | 2026-11-22 |
 
 「Spring Boot が選ぶ」と書いたものは、`pom.xml` で版を指定していない。Spring Boot 4.1.2 が、一緒に動くことを確かめた版を自動で選ぶ（Spring Boot の版を上げると、これらも一緒に上がる）。今の版は `backend` フォルダで `.\mvnw.cmd dependency:list` を実行すると確かめられる。画面のライブラリの版は `frontend` フォルダで `npm.cmd ls` で確かめられる。
@@ -241,6 +244,8 @@ v2.0で、発注者から次の指定がありました。
 └── backend/                     バックエンド（Spring Boot）
     ├── pom.xml                  使うライブラリの一覧と版（NFR-28）
     ├── mvnw / mvnw.cmd          Maven Wrapper
+    ├── checkstyle.xml           書き方のチェック（Checkstyle）の設定
+    ├── spotbugs-exclude.xml     バグのチェック（SpotBugs）で例外にするものと、その理由
     ├── db/test-data.sql         動作確認用のテストデータ（手で入れる。Flyway では入れない。入れ方はファイルの先頭）
     └── src/main/
         ├── java/…/taskboard/
