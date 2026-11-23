@@ -1,6 +1,6 @@
 // ボードのデータを変える処理（要件定義書 13.5 の state/。useReducer で使う）
 // 「何が起きたか」（アクション）を受け取って、新しいボードを返す。元のボードは書き換えない。
-import type { Board, Card } from '../types.ts'
+import type { Board, Card, TaskList } from '../types.ts'
 
 export type BoardAction =
   /** API からボードを読み込んだ */
@@ -9,6 +9,8 @@ export type BoardAction =
   | { type: 'cardAdded'; listId: number; card: Card }
   /** カードの内容を更新した（API が返したカードで、同じ id のカードを置き換える。場所は変えない） */
   | { type: 'cardUpdated'; card: Card }
+  /** リストの中のカードを並べ替えた（API が返した、並べ替えたあとのリストで置き換える） */
+  | { type: 'listSorted'; list: TaskList }
   /** カードを削除した */
   | { type: 'cardDeleted'; cardId: number }
   /** カードを、指定したリストの指定した位置（0始まり）へ動かした（ドラッグ＆ドロップ） */
@@ -36,6 +38,9 @@ export function boardReducer(state: BoardState, action: BoardAction): BoardState
           cards: list.cards.map((card) => (card.id === action.card.id ? action.card : card)),
         })),
       }
+    case 'listSorted':
+      if (state === null) return state
+      return { lists: state.lists.map((list) => (list.id === action.list.id ? action.list : list)) }
     case 'cardDeleted':
       if (state === null) return state
       return {

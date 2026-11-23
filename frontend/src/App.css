@@ -65,6 +65,46 @@
   word-break: break-all;
 }
 
+/* ===== 並べ替えのメニュー（F-13・SC-01-f） ===== */
+.sort { position: relative; }
+
+.icon-btn {
+  padding: 2px 6px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: var(--text-sub);
+  font-size: 16px;
+  line-height: 1;
+}
+
+.icon-btn:hover { background: #dcdfe4; }
+
+.menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  z-index: 10;
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(9, 30, 66, 0.25);
+}
+
+.menu-item {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.menu-item:hover { background: #f1f2f4; }
+.menu-item.current { color: var(--accent); font-weight: bold; }
+
 .cards {
   display: flex;
   flex-direction: column;

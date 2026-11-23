@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { useDndContext, useDroppable } from '@dnd-kit/core'
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import { cardDragId, listDragId } from '../dnd.ts'
-import type { Card as CardData, NewCard, TaskList } from '../types.ts'
+import type { Card as CardData, NewCard, SortKey, TaskList } from '../types.ts'
 import Card from './Card.tsx'
 import CardDialog from './CardDialog.tsx'
+import SortMenu from './SortMenu.tsx'
 
 /**
- * リスト1つ。リスト名と、その中のカードを上から並び順どおりに出し、下に「+ カードを追加」を置く。
+ * リスト1つ。リスト名と並べ替えのメニュー（⇅）、その中のカードを上から並び順どおりに出し、下に「+ カードを追加」を置く。
  * カードを置ける場所になっているので、カードが1枚もないリストにも置ける（F-08）。
  */
 export default function ListColumn({
@@ -15,11 +16,13 @@ export default function ListColumn({
   onAddCard,
   onOpenCard,
   onDeleteCard,
+  onSortCards,
 }: {
   list: TaskList
   onAddCard: (listId: number, newCard: NewCard) => Promise<boolean>
   onOpenCard: (card: CardData, listId: number) => void
   onDeleteCard: (cardId: number) => void
+  onSortCards: (listId: number, by: SortKey, reverse: boolean) => Promise<void>
 }) {
   const [adding, setAdding] = useState(false) // カードを追加するダイアログを開いているか
   const { setNodeRef } = useDroppable({ id: listDragId(list.id) })
@@ -32,6 +35,11 @@ export default function ListColumn({
     <section ref={setNodeRef} className={isOver ? 'list drop-target' : 'list'}>
       <div className="list-header">
         <h2 className="list-title">{list.title}</h2>
+        <SortMenu
+          listTitle={list.title}
+          cards={list.cards}
+          onSort={(by, reverse) => onSortCards(list.id, by, reverse)}
+        />
       </div>
       <SortableContext items={list.cards.map((card) => cardDragId(card.id))} strategy={verticalListSortingStrategy}>
         <div className="cards">

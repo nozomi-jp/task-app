@@ -13,7 +13,7 @@ import {
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
 import { detectDropTarget, parseDragId } from '../dnd.ts'
 import { findCardPlace, moveCardInBoard } from '../state/boardReducer.ts'
-import type { Board as BoardData, Card, NewCard } from '../types.ts'
+import type { Board as BoardData, Card, NewCard, SortKey } from '../types.ts'
 import { CardOverlay } from './Card.tsx'
 import ListColumn from './ListColumn.tsx'
 
@@ -28,6 +28,7 @@ export default function Board({
   onAddCard,
   onOpenCard,
   onDeleteCard,
+  onSortCards,
   onPreviewMove,
   onRestore,
   onCommitMove,
@@ -37,6 +38,8 @@ export default function Board({
   onOpenCard: (card: Card, listId: number) => void
   /** カードを削除する（API-07） */
   onDeleteCard: (cardId: number) => void
+  /** リストの中のカードを並べ替える（API-09） */
+  onSortCards: (listId: number, by: SortKey, reverse: boolean) => Promise<void>
   /** 画面の上だけで、カードを仮に動かす */
   onPreviewMove: (cardId: number, toListId: number, toIndex: number) => void
   /** つかむ前のボードに戻す */
@@ -138,6 +141,7 @@ export default function Board({
             onAddCard={onAddCard}
             onOpenCard={onOpenCard}
             onDeleteCard={onDeleteCard}
+            onSortCards={onSortCards}
           />
         ))}
       </main>
