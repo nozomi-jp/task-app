@@ -4,11 +4,11 @@
 const CANNOT_CONNECT = 'サーバーに接続できません'
 
 /**
- * API を呼び、返ってきた JSON を返す。
+ * API を呼ぶ。失敗したらエラーを投げる。
  * - サーバーに届かない、または 502〜504（開発中にバックエンドが止まっていると、中継役の Vite が返す）→「サーバーに接続できません」
  * - そのほかのエラー → バックエンドが返した {"error": "理由"} の理由。読めなければ状態コード
  */
-export async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
+async function request(url: string, init?: RequestInit): Promise<Response> {
   let response: Response
   try {
     response = await fetch(url, init)
@@ -21,7 +21,18 @@ export async function requestJson<T>(url: string, init?: RequestInit): Promise<T
   if (!response.ok) {
     throw new Error(await readErrorReason(response))
   }
+  return response
+}
+
+/** API を呼び、返ってきた JSON を返す */
+export async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
+  const response = await request(url, init)
   return (await response.json()) as T
+}
+
+/** API を呼ぶ。成功しても返事の中身がないとき（204。削除など）に使う */
+export async function requestNoContent(url: string, init?: RequestInit): Promise<void> {
+  await request(url, init)
 }
 
 /** エラーの返事 {"error": "理由"} から理由を取り出す */

@@ -10,9 +10,19 @@ import { PRIORITY_LABELS, dueDateStatus, formatDueDate } from '../format.ts'
  * - クリック（またはキーボードで選んで Enter）すると、詳細画面を開く（F-06）
  * - つかんで動かすと、別のリストへ移したり並べ替えたりできる（F-08・F-09）。キーボードでは Space でつかむ
  * - つかんでいる間、元の場所のカードは半透明になる（置く位置の目印）
+ * - マウスを乗せたときだけ右端に「×」が出て、押すと確認なしですぐ削除する（F-07）
+ *   「×」は、クリックやドラッグを受け付ける部分（.card）の外に重ねて置くので、押しても詳細画面やドラッグにならない
  */
-export default function Card({ card, onOpen }: { card: CardData; onOpen: () => void }) {
-  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+export default function Card({
+  card,
+  onOpen,
+  onDelete,
+}: {
+  card: CardData
+  onOpen: () => void
+  onDelete: () => void
+}) {
+  const { attributes, listeners, setNodeRef, setActivatorNodeRef, transform, transition, isDragging } = useSortable({
     id: cardDragId(card.id),
   })
 
@@ -28,15 +38,23 @@ export default function Card({ card, onOpen }: { card: CardData; onOpen: () => v
   return (
     <div
       ref={setNodeRef}
-      className={isDragging ? 'card dragging' : 'card'}
+      className="card-wrap"
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      {...attributes}
-      {...listeners}
-      aria-label={`${card.text}（Enter で詳細を開く、Space でつかんで動かす）`}
-      onClick={onOpen}
-      onKeyDown={handleKeyDown}
     >
-      <CardContent card={card} />
+      <div
+        ref={setActivatorNodeRef}
+        className={isDragging ? 'card dragging' : 'card'}
+        {...attributes}
+        {...listeners}
+        aria-label={`${card.text}（Enter で詳細を開く、Space でつかんで動かす）`}
+        onClick={onOpen}
+        onKeyDown={handleKeyDown}
+      >
+        <CardContent card={card} />
+      </div>
+      <button type="button" className="card-delete" aria-label={`${card.text} を削除`} title="削除" onClick={onDelete}>
+        ×
+      </button>
     </div>
   )
 }
