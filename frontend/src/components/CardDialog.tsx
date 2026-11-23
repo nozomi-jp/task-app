@@ -87,6 +87,8 @@ export default function CardDialog({
   }
 
   return (
+    // 外のクリックで閉じるのはマウス用のおまけ。キーボードでは Esc（onCancel）と「キャンセル」で閉じられるので、例外にする
+    // oxlint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
     <dialog
       ref={dialogRef}
       className="dialog"

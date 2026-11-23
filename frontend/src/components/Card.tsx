@@ -41,6 +41,8 @@ export default function Card({
       className="card-wrap"
       style={{ transform: CSS.Transform.toString(transform), transition }}
     >
+      {/* 役割（role="button"）と tabIndex は、dnd-kit の attributes が付ける。lint には見えないので例外にする（キーボードで選び、Enter・Space で使えることを確認済み） */}
+      {/* oxlint-disable-next-line jsx-a11y/no-static-element-interactions */}
       <div
         ref={setActivatorNodeRef}
         className={isDragging ? 'card dragging' : 'card'}
