@@ -110,12 +110,20 @@ npm.cmd run dev
 
 困ったときは [要件定義書 ⑤ の 12.5「障害時の対応」](docs/requirements/05-nfr-operations-tech.md) を見てください。
 
-## 自動チェック（書き方・バグ）
+## 自動テストと自動チェック
 
 | 部分 | フォルダ | コマンド |
 | --- | --- | --- |
-| 画面（oxlint） | `frontend` | `npm.cmd run lint` |
-| バックエンド（Checkstyle・SpotBugs） | `backend` | `.\mvnw.cmd compile checkstyle:check spotbugs:check` |
+| 画面のテスト（Vitest） | `frontend` | `npm.cmd run test` |
+| バックエンドのテスト（JUnit） | `backend` | `.\mvnw.cmd test` |
+| 画面の書き方（oxlint） | `frontend` | `npm.cmd run lint` |
+| バックエンドの書き方・バグ（Checkstyle・SpotBugs） | `backend` | `.\mvnw.cmd compile checkstyle:check spotbugs:check` |
+
+バックエンドのテストは、テスト専用のデータベース `taskboard_test` を使います（ふだんのカードは変わりません）。最初に1回だけ、リポジトリのフォルダで作ります。
+
+```
+docker compose exec db createdb -U taskboard taskboard_test
+```
 
 ## フォルダの構成
 
