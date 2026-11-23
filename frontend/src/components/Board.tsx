@@ -25,6 +25,7 @@ import ListColumn from './ListColumn.tsx'
  */
 export default function Board({
   board,
+  searchWords,
   onAddCard,
   onOpenCard,
   onDeleteCard,
@@ -35,6 +36,8 @@ export default function Board({
   onDraggingChange,
 }: {
   board: BoardData
+  /** 検索している言葉。検索していなければ空 */
+  searchWords: string[]
   onAddCard: (listId: number, newCard: NewCard) => Promise<SaveResult>
   onOpenCard: (card: Card, listId: number) => void
   /** カードを削除する（API-07） */
@@ -144,6 +147,7 @@ export default function Board({
           <ListColumn
             key={list.id}
             list={list}
+            searchWords={searchWords}
             onAddCard={onAddCard}
             onOpenCard={onOpenCard}
             onDeleteCard={onDeleteCard}
