@@ -28,6 +28,11 @@
 ライブラリごとのくわしい版と、選んだ理由は [要件定義書 ⑤ の 13章](docs/requirements/05-nfr-operations-tech.md) にあります。
 
 ```
+ふだん使うとき
+  ブラウザ ──→ バックエンド（Spring Boot） http://localhost:8080 ──→ PostgreSQL（Docker） 5432
+                 ビルドした画面も一緒に配る
+
+開発中
   ブラウザ ──→ 画面の開発サーバー（Vite） http://localhost:5173
                  │  /api で始まる依頼はバックエンドへ中継する
                  ↓
@@ -42,14 +47,34 @@
    ```
    docker compose up -d
    ```
-4. **画面のライブラリを入れる**：`frontend` フォルダで
+4. **画面のライブラリを入れて、ビルドする**（ブラウザ用の完成品を作る）：`frontend` フォルダで、1行ずつ
    ```
    npm.cmd install
+   ```
+   ```
+   npm.cmd run build
    ```
 
 テーブルは、バックエンドを最初に起動したときに自動で作られます。
 
+## 起動と停止（ふだん使うとき）
+
+使うターミナルは1つです。VS Code の上のメニュー → **ターミナル → 新しいターミナル** で開きます。
+
+```
+cd backend
+```
+```
+.mvnw.cmd spring-boot:run
+```
+
+`Started TaskboardApplication` と出たら、ブラウザで http://localhost:8080 を開きます。止めるときは **Ctrl + C**（`Y` → Enter も）。
+
+画面のプログラムを変えたときは、`frontend` フォルダで `npm.cmd run build` をしてから、バックエンドを起動し直します。
+
 ## 起動と停止（開発中）
+
+画面を書き換えるとすぐ反映される、開発用の動かし方です。
 
 ターミナルを2つ使います。VS Code の上のメニュー → **ターミナル → 新しいターミナル** で開きます。
 
