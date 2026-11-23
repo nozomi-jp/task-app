@@ -28,7 +28,7 @@
 | --- | --- |
 | `src/main.tsx` | 入口 |
 | `src/App.tsx` | ボード画面全体。開いたときに API でボードを読み込む |
-| `src/components/` | 画面の部品（Board・ListColumn・Card・CardDialog・SortButtons） |
+| `src/components/` | 画面の部品（Board・ListColumn・Card・CardDialog・SortButtons・UndoToast） |
 | `src/state/` | ボードのデータを変える処理（useReducer） |
 | `src/api/` | API を呼ぶ処理 |
 | `src/types.ts` | API でやりとりするデータの形（型）。要件定義書 10章の API-01 と同じ |

@@ -5,13 +5,15 @@ import { requestJson, requestNoContent } from './client.ts'
 
 /**
  * API-05：カードをリストの一番下に追加する（登録なので POST）。
+ * position（0始まり）を渡すと、その場所に入れる（消したカードを元に戻すとき）。
  * 成功するとサーバーは 201 と、追加したカード（データベースが決めた id 付き）を返す。
  */
-export function createCard(listId: number, newCard: NewCard): Promise<Card> {
+export function createCard(listId: number, newCard: NewCard, position?: number): Promise<Card> {
+  const { text, description, priority, dueDate } = newCard
   return requestJson<Card>(`/api/lists/${listId}/cards`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(newCard),
+    body: JSON.stringify({ text, description, priority, dueDate, position }),
   })
 }
 

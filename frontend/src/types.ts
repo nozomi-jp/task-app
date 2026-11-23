@@ -30,6 +30,13 @@ export type NewCard = {
   dueDate: string | null
 }
 
+/** 消したカード。元に戻すために、中身と、消したときの場所（リストと、上から何番目か）を覚えておく（F-14） */
+export type DeletedCard = {
+  card: Card
+  listId: number
+  index: number
+}
+
 /** カードを更新するときに送るもの（API-06 PATCH）。説明・優先度・期限は null で「なし」にする。listId はステータス（移す先のリスト） */
 export type CardUpdate = CardFormValues
 
