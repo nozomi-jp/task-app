@@ -4,7 +4,6 @@ import {
   DragOverlay,
   KeyboardSensor,
   PointerSensor,
-  closestCorners,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -12,7 +11,7 @@ import {
   type DragStartEvent,
 } from '@dnd-kit/core'
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
-import { parseDragId } from '../dnd.ts'
+import { detectDropTarget, parseDragId } from '../dnd.ts'
 import { findCardPlace, moveCardInBoard } from '../state/boardReducer.ts'
 import type { Board as BoardData, Card, NewCard } from '../types.ts'
 import { CardOverlay } from './Card.tsx'
@@ -125,7 +124,7 @@ export default function Board({
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={closestCorners}
+      collisionDetection={detectDropTarget}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
