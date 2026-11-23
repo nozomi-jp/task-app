@@ -4,7 +4,9 @@ import { createCard, deleteCard, moveCard, updateCard } from './api/cardApi.ts'
 import { sortCards } from './api/listApi.ts'
 import Board from './components/Board.tsx'
 import CardDialog from './components/CardDialog.tsx'
+import SearchBox from './components/SearchBox.tsx'
 import UndoToast from './components/UndoToast.tsx'
+import { matchesSearch, parseWords } from './search.ts'
 import { boardReducer, findCardPlace } from './state/boardReducer.ts'
 import type { Card, CardFormValues, DeletedCard, NewCard, SaveResult, SortKey } from './types.ts'
 import './App.css'
@@ -33,6 +35,8 @@ export default function App() {
   const [undoToast, setUndoToast] = useState<DeletedCard | null>(null) // 「元に戻す」の知らせを出しているカード
   const deletedCards = useRef<DeletedCard[]>([]) // 消したカード（最後が、いちばん新しく消したもの）。読み込み直すと空になる
   const dragging = useRef(false) // カードをつかんでいる間か
+  const [query, setQuery] = useState('') // 検索の欄の文字
+  const searchInput = useRef<HTMLInputElement>(null)
 
   // 画面を開いたときに1回だけ読み込む
   useEffect(() => {
@@ -69,6 +73,11 @@ export default function App() {
     [reloadBoard],
   )
 
+  /** 検索中に増えたカードが検索に合わなければ、検索をやめる（隠れたままだと、増えたことがわからないため） */
+  const showCard = useCallback((card: Card) => {
+    setQuery((current) => (matchesSearch(card, parseWords(current)) ? current : ''))
+  }, [])
+
   /**
    * カードを追加する（F-05）。API で保存できたら、返ってきたカードを画面に足す。
    * 戻り値は、保存の結果（失敗した理由は、ダイアログの中にも出す）。
@@ -78,13 +87,14 @@ export default function App() {
       try {
         const card = await createCard(listId, newCard)
         dispatch({ type: 'cardAdded', listId, card })
+        showCard(card)
         setErrorMessage(null)
         return null
       } catch (error) {
         return handleSaveError(error)
       }
     },
-    [handleSaveError],
+    [handleSaveError, showCard],
   )
 
   /**
@@ -155,13 +165,14 @@ export default function App() {
       dispatch({ type: 'cardAdded', listId: last.listId, card, index: last.index })
       deletedCards.current = deletedCards.current.filter((deleted) => deleted !== last)
       setUndoToast(null)
+      showCard(card)
       setErrorMessage(null)
     } catch (error) {
       handleSaveError(error)
     } finally {
       undoing.current = false
     }
-  }, [handleSaveError])
+  }, [handleSaveError, showCard])
 
   // 「元に戻す」の知らせは、時間がたったら消す（消したカードは覚えたままなので、Ctrl + Z では戻せる）
   useEffect(() => {
@@ -169,6 +180,21 @@ export default function App() {
     const timer = setTimeout(() => setUndoToast(null), UNDO_TOAST_MS)
     return () => clearTimeout(timer)
   }, [undoToast])
+
+  // Ctrl + F で、検索の欄に移る。検索の欄にいるとき・ダイアログを開いているときは、ブラウザの検索のままにする
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (!e.ctrlKey || e.shiftKey || e.altKey || e.key.toLowerCase() !== 'f') return
+      const input = searchInput.current
+      if (input === null || e.target === input || document.querySelector('dialog[open]') !== null) return
+      e.preventDefault()
+      if (dragging.current) return
+      input.focus()
+      input.select()
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   // Ctrl + Z で、消したカードを戻す。入力欄・ダイアログの中では、ブラウザの「文字を戻す」のままにする
   useEffect(() => {
@@ -212,10 +238,17 @@ export default function App() {
     [handleSaveError],
   )
 
+  const words = parseWords(query)
+  const found =
+    board === null || words.length === 0
+      ? null
+      : board.lists.flatMap((list) => list.cards).filter((card) => matchesSearch(card, words)).length
+
   return (
     <>
       <header className="header">
         <h1 className="board-title">マイボード</h1>
+        {board !== null && <SearchBox inputRef={searchInput} query={query} count={found} onChange={setQuery} />}
         {errorMessage ? (
           <span className="save-status error" role="alert">
             {errorMessage}
@@ -229,6 +262,7 @@ export default function App() {
       ) : (
         <Board
           board={board}
+          searchWords={words}
           onAddCard={handleAddCard}
           onOpenCard={(card, listId) => setOpenCard({ card, listId })}
           onDeleteCard={handleDeleteCard}

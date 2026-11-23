@@ -242,8 +242,9 @@ v2.0で、発注者から次の指定がありました。
 │       ├── App.tsx              ボード画面全体
 │       ├── format.ts            期限・優先度の表示のしかた
 │       ├── sort.ts              今どの順に並んでいるかを調べる（F-13）
+│       ├── search.ts            カードの検索（F-15）
 │       ├── dnd.ts               ドラッグ&ドロップで置く場所を決める（F-08・F-09）
-│       ├── components/          画面の部品（Board・ListColumn・Card・CardDialog・SortButtons・UndoToast）
+│       ├── components/          画面の部品（Board・ListColumn・Card・CardDialog・SortButtons・UndoToast・SearchBox）
 │       ├── state/               データを変える処理（useReducer）
 │       └── api/                 APIを呼ぶ処理
 └── backend/                     バックエンド（Spring Boot）
