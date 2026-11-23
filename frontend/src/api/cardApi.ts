@@ -15,7 +15,10 @@ export function createCard(listId: number, newCard: NewCard): Promise<Card> {
   })
 }
 
-/** API-06：カードの内容（タイトル・説明・優先度・期限）を更新する（PATCH）。更新したあとのカードが返る */
+/**
+ * API-06：カードの内容（タイトル・説明・優先度・期限）とステータスを、まとめて更新する（PATCH）。
+ * ステータス（listId）が変わっていれば、そのリストの一番下へ移る。全部保存されるか、何も変わらないかのどちらか。
+ */
 export function updateCard(cardId: number, update: CardUpdate): Promise<Card> {
   return requestJson<Card>(`/api/cards/${cardId}`, {
     method: 'PATCH',

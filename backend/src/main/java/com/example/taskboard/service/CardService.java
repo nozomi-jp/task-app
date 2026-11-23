@@ -50,16 +50,21 @@ public class CardService {
     }
 
     /**
-     * カードの内容（タイトル・説明・期限・優先度）を更新する（詳細画面、API-06）。
+     * カードの内容（タイトル・説明・期限・優先度）を更新し、ステータス（リスト）が変わっていれば、そのリストの一番下へ移す
+     * （詳細画面、API-06）。
+     * 1つのトランザクションで行うので、移せなかったときは内容も変わらない（片方だけ保存されることはない）。
      * トランザクションの中で変えたカードは、終わるときに自動でデータベースに保存される。
      *
-     * @throws NotFoundException カードがないとき
+     * @throws NotFoundException カード・移動先のリストがないとき
      */
     @Transactional
     public CardResponse updateCard(Long cardId, UpdateCardRequest request) {
         Card card = findCard(cardId);
         card.updateContent(request.text(), blankToNull(request.description()), request.dueDate(),
                 request.priority());
+        if (request.listId() != null && !request.listId().equals(card.getListId())) {
+            place(card, request.listId(), Integer.MAX_VALUE); // 一番下
+        }
         return CardResponse.from(card);
     }
 
@@ -74,7 +79,14 @@ public class CardService {
     @Transactional
     public CardResponse moveCard(Long cardId, Long targetListId, int position) {
         Card card = findCard(cardId);
+        place(card, targetListId, position);
+        return CardResponse.from(card);
+    }
+
+    /** カードを、指定したリストの指定した位置へ移し、並び順を振り直す。呼ぶ側のトランザクションの中で行う */
+    private void place(Card card, Long targetListId, int position) {
         requireListExists(targetListId);
+        Long cardId = card.getId();
         Long sourceListId = card.getListId();
 
         // 移動先のリストのカード（動かすカード自身は除く）に、動かすカードを差し込む
@@ -92,7 +104,6 @@ public class CardService {
                     .filter(c -> !c.getId().equals(cardId))
                     .toList());
         }
-        return CardResponse.from(card);
     }
 
     /**

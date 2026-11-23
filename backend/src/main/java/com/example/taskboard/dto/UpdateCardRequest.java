@@ -8,8 +8,9 @@ import jakarta.validation.constraints.Size;
 
 /**
  * API-06 PATCH /api/cards/{id} で送られてくるデータの形（詳細画面の「保存」）。
- * 例：{"text": "買い物", "description": null, "priority": "high", "dueDate": "2026-11-25"}
- * 詳細画面は4つの項目をまとめて送る。description・priority・dueDate を null（または省略）にすると「なし」にする。
+ * 例：{"text": "買い物", "description": null, "priority": "high", "dueDate": "2026-11-25", "listId": 2}
+ * 詳細画面は、内容の4つの項目とステータス（listId）をまとめて送る。description・priority・dueDate を null（または省略）にすると「なし」にする。
+ * listId は、移す先のリスト。null（または省略）、今と同じリストなら、場所は変えない。
  * ルールは登録（CreateCardRequest）と同じ（要件定義書 6.1、NFR-22）。
  */
 public record UpdateCardRequest(
@@ -24,5 +25,7 @@ public record UpdateCardRequest(
         @Pattern(regexp = "high|medium|low", message = "優先度は high・medium・low のどれかにしてください")
         String priority,
 
-        LocalDate dueDate) {
+        LocalDate dueDate,
+
+        Long listId) {
 }

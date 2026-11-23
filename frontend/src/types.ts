@@ -30,8 +30,8 @@ export type NewCard = {
   dueDate: string | null
 }
 
-/** カードの内容を更新するときに送るもの（API-06 PATCH）。説明・優先度・期限は null で「なし」にする */
-export type CardUpdate = NewCard
+/** カードを更新するときに送るもの（API-06 PATCH）。説明・優先度・期限は null で「なし」にする。listId はステータス（移す先のリスト） */
+export type CardUpdate = CardFormValues
 
 /** 並べ替えの種類（F-13）。dueDate：期限、priority：優先度 */
 export type SortKey = 'dueDate' | 'priority'

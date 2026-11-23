@@ -75,21 +75,17 @@ export default function App() {
   )
 
   /**
-   * 詳細画面の「保存」（F-06）。内容を更新し（API-06）、ステータスが変わっていれば、そのリストの一番下へ移す（API-08）。
-   * 内容だけなら、返ってきたカードで置き換える。移したときは、並び順が変わるのでボードを読み込み直す。
+   * 詳細画面の「保存」（F-06、API-06）。内容とステータスをまとめて更新する（片方だけ保存されることはない）。
+   * 保存できたら、返ってきたカードで置き換え、ステータスが変わっていれば、そのリストの一番下へ移す。
    */
   const handleUpdateCard = useCallback(
     async (card: Card, currentListId: number, values: CardFormValues): Promise<boolean> => {
       try {
-        const { listId, ...update } = values
-        const updated = await updateCard(card.id, update)
-        if (listId === currentListId) {
-          dispatch({ type: 'cardUpdated', card: updated })
-        } else {
-          // 移動先のリストのカードの枚数＝一番下の位置（0始まり）
-          const bottom = board?.lists.find((list) => list.id === listId)?.cards.length ?? 0
-          await moveCard(card.id, listId, bottom)
-          await reloadBoard()
+        const updated = await updateCard(card.id, values)
+        dispatch({ type: 'cardUpdated', card: updated })
+        if (values.listId !== currentListId) {
+          // 位置は、リストのカードの枚数より大きければ一番下になる
+          dispatch({ type: 'cardMoved', cardId: card.id, toListId: values.listId, toIndex: Number.MAX_SAFE_INTEGER })
         }
         setErrorMessage(null)
         return true
@@ -97,7 +93,7 @@ export default function App() {
         return handleSaveError(error)
       }
     },
-    [board, handleSaveError, reloadBoard],
+    [handleSaveError],
   )
 
   /**
