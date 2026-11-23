@@ -30,6 +30,12 @@ public class TaskList {
         // JPA が使う
     }
 
+    /** 新しいリストを作る（F-02）。id は保存したときにデータベースが決める。日時はデータベースの初期値（now()）が入る */
+    public TaskList(String title, Integer position) {
+        this.title = title;
+        this.position = position;
+    }
+
     public Long getId() {
         return id;
     }

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 import { fetchBoard } from './api/boardApi.ts'
 import { createCard, deleteCard, moveCard, updateCard } from './api/cardApi.ts'
-import { sortCards } from './api/listApi.ts'
+import { createList, sortCards } from './api/listApi.ts'
 import Board from './components/Board.tsx'
 import CardDialog from './components/CardDialog.tsx'
 import LabelFilter from './components/LabelFilter.tsx'
@@ -212,12 +212,12 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
-  // Esc で、検索・ラベルの絞り込みをやめる。検索の欄の中の Esc は SearchBox が、ダイアログの Esc はダイアログが受け持つ
+  // Esc で、検索・ラベルの絞り込みをやめる。入力欄の中の Esc はその入力欄が、ダイアログの Esc はダイアログが受け持つ
   const filtering = isFiltering({ words: parseWords(query), label: labelFilter })
   useEffect(() => {
     if (!filtering) return
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key !== 'Escape' || e.target === searchInput.current) return
+      if (e.key !== 'Escape' || isTextField(e.target)) return
       if (document.querySelector('dialog[open]') !== null) return
       e.preventDefault()
       clearSearch()
@@ -244,6 +244,21 @@ export default function App() {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [handleUndoDelete, labelFilter])
+
+  /** リストを一番最後に追加する（F-02、API-02）。失敗したら右上に赤い字で理由を出し、読み込み直す。戻り値は、保存の結果 */
+  const handleAddList = useCallback(
+    async (title: string): Promise<SaveResult> => {
+      try {
+        const list = await createList(title)
+        dispatch({ type: 'listAdded', list })
+        setErrorMessage(null)
+        return null
+      } catch (error) {
+        return handleSaveError(error)
+      }
+    },
+    [handleSaveError],
+  )
 
   /** リストの中のカードを並べ替える（F-13、API-09）。失敗したら右上に赤い字で理由を出し、読み込み直す */
   const handleSortCards = useCallback(
@@ -304,6 +319,7 @@ export default function App() {
         <Board
           board={board}
           filter={filter}
+          onAddList={handleAddList}
           onAddCard={handleAddCard}
           onOpenCard={(card, listId) => setOpenCard({ card, listId })}
           onDeleteCard={handleDeleteCard}
