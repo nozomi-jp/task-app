@@ -12,7 +12,16 @@ import com.example.taskboard.entity.Card;
  */
 public record BoardResponse(List<ListResponse> lists) {
 
+    /** 受け取ったリストは、あとから変えられない形（List.copyOf）にして持つ */
+    public BoardResponse {
+        lists = List.copyOf(lists);
+    }
+
     public record ListResponse(Long id, String title, List<CardResponse> cards) {
+
+        public ListResponse {
+            cards = List.copyOf(cards);
+        }
     }
 
     public record CardResponse(Long id, String text, String description, LocalDate dueDate, String priority) {

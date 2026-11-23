@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SpotBugs（バグになりやすい書き方のチェック）で、例外にするもの。足すときは理由を書く。
+-->
+<FindBugsFilter>
+    <!--
+      EI_EXPOSE_REP2「外から受け取ったものを、そのまま持っている」
+      Controller・Service は、Spring が用意した部品（Service・Repository）をコンストラクターで受け取って使う。
+      Spring の標準の書き方で、写し（コピー）を作るものではないので例外にする。
+    -->
+    <Match>
+        <Or>
+            <Package name="com.example.taskboard.controller"/>
+            <Package name="com.example.taskboard.service"/>
+        </Or>
+        <Bug pattern="EI_EXPOSE_REP2"/>
+    </Match>
+</FindBugsFilter>
