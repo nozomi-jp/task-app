@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent, type MouseEvent } from 'react'
+import { useLayoutEffect, useRef, useState, type FormEvent, type KeyboardEvent, type MouseEvent } from 'react'
 import type { CardFormValues, Priority, SaveResult } from '../types.ts'
 
 /** 文字数の上限（要件定義書 6.1） */
@@ -51,9 +51,13 @@ export default function CardDialog({
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<SaveResult>(null) // 保存できなかった理由
 
-  // ブラウザ標準のダイアログとして開く（後ろが暗くなり、後ろの画面は操作できなくなる）
-  useEffect(() => {
-    dialogRef.current?.showModal()
+  // ブラウザ標準のダイアログとして開く（後ろが暗くなり、後ろの画面は操作できなくなる）。
+  // 画面から消す前に close() で閉じると、ブラウザが、開く前に選んでいた場所（カードや追加ボタン）に戻してくれる。
+  // useEffect の片付けは画面から消えたあとに動くことがあるので、消える前に動く useLayoutEffect を使う。
+  useLayoutEffect(() => {
+    const dialog = dialogRef.current
+    dialog?.showModal()
+    return () => dialog?.close()
   }, [])
 
   const canSave = title.trim() !== '' && !saving
