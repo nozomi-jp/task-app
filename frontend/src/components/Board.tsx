@@ -15,6 +15,7 @@ import { detectDropTarget, parseDragId } from '../dnd.ts'
 import type { SearchFilter } from '../search.ts'
 import { findCardPlace, moveCardInBoard } from '../state/boardReducer.ts'
 import type { Board as BoardData, Card, NewCard, SaveResult, SortKey } from '../types.ts'
+import AddList from './AddList.tsx'
 import { CardOverlay } from './Card.tsx'
 import ListColumn from './ListColumn.tsx'
 
@@ -27,6 +28,7 @@ import ListColumn from './ListColumn.tsx'
 export default function Board({
   board,
   filter,
+  onAddList,
   onAddCard,
   onOpenCard,
   onDeleteCard,
@@ -39,6 +41,8 @@ export default function Board({
   board: BoardData
   /** 検索・ラベルの絞り込みの条件 */
   filter: SearchFilter
+  /** リストを追加する（API-02） */
+  onAddList: (title: string) => Promise<SaveResult>
   onAddCard: (listId: number, newCard: NewCard) => Promise<SaveResult>
   onOpenCard: (card: Card, listId: number) => void
   /** カードを削除する（API-07） */
@@ -155,6 +159,7 @@ export default function Board({
             onSortCards={onSortCards}
           />
         ))}
+        <AddList onAddList={onAddList} />
       </main>
       {/* つかんでいる間、マウスについてくるカード */}
       <DragOverlay>{draggingCard ? <CardOverlay card={draggingCard} /> : null}</DragOverlay>

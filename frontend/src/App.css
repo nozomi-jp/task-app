@@ -259,6 +259,36 @@
 
 .add-card:hover { background: #dcdfe4; }
 
+/* ===== リストを追加（F-02） ===== */
+.add-list {
+  width: var(--list-width);
+  padding: 12px;
+  border: 1px dashed #8590a2;
+  border-radius: 10px;
+  background: none;
+  color: var(--text-sub);
+  text-align: left;
+}
+
+.add-list:hover { background: rgba(255, 255, 255, 0.6); }
+
+.list-title-input {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 5px 8px;
+  border: 1px solid var(--accent);
+  border-radius: 6px;
+  background: var(--card-bg);
+  color: var(--text);
+  font: inherit;
+  font-weight: bold;
+}
+
+.list-title-input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
 /* ===== カードを追加するダイアログ（SC-01-b） ===== */
 .dialog {
   width: min(420px, calc(100vw - 32px));

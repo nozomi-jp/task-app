@@ -244,7 +244,7 @@ v2.0で、発注者から次の指定がありました。
 │       ├── sort.ts              今どの順に並んでいるかを調べる（F-13）
 │       ├── search.ts            カードの検索・ラベルでの絞り込み（F-15・F-16）
 │       ├── dnd.ts               ドラッグ&ドロップで置く場所を決める（F-08・F-09）
-│       ├── components/          画面の部品（Board・ListColumn・Card・CardDialog・SortButtons・UndoToast・SearchBox・LabelFilter）
+│       ├── components/          画面の部品（Board・ListColumn・Card・CardDialog・SortButtons・UndoToast・SearchBox・LabelFilter・AddList・ListTitleInput）
 │       ├── state/               データを変える処理（useReducer）
 │       └── api/                 APIを呼ぶ処理
 └── backend/                     バックエンド（Spring Boot）
@@ -255,7 +255,7 @@ v2.0で、発注者から次の指定がありました。
     ├── db/test-data.sql         動作確認用のテストデータ（手で入れる。Flyway では入れない。入れ方はファイルの先頭）
     └── src/main/
         ├── java/…/taskboard/
-        │   ├── controller/      受付：URLとメソッドごとの入口（API-01、05〜09）
+        │   ├── controller/      受付：URLとメソッドごとの入口（API-01、02、05〜09）
         │   ├── service/         処理：並び順の振り直し・並べ替えなど（トランザクション）
         │   ├── repository/      データベースの読み書き
         │   ├── entity/          テーブルと対応するクラス
